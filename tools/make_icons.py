@@ -2,7 +2,7 @@
 """拡張機能用のアイコン PNG を生成する。
 
 外部ライブラリを使わずに済ませるため、4x のスーパーサンプリングで
-角丸の背景とスパークル形を描き、zlib で PNG を書き出す。
+角丸の背景とターミナルのプロンプト記号を描き、zlib で PNG を書き出す。
 
     python3 tools/make_icons.py
 """
@@ -21,16 +21,26 @@ BACKGROUND = (17, 17, 21)
 FOREGROUND = (255, 255, 255)
 CORNER_RADIUS = 3.5 / 16  # 16 単位系での角丸半径の比率
 
-# 4 方向のスパークル（16 単位系）。小サイズで「＋」に見えないよう内側の頂点を太めにしている。
-SPARKLE = [
-    (8.0, 1.25),
-    (10.2, 5.8),
-    (14.75, 8.0),
-    (10.2, 10.2),
-    (8.0, 14.75),
-    (5.8, 10.2),
-    (1.25, 8.0),
-    (5.8, 5.8),
+# ターミナルのプロンプト記号 "❯_"（16 単位系）。src/content.js の ICON_PATH と同じデザイン。
+# ただしシェブロンは太さ 2.5 で、あちらの 2.1 より太い。16px の PNG では 45 度の対角線が
+# アンチエイリアスで 2px に散ってコントラストを失うため、ラスタ側だけ太らせている。
+GLYPH = [
+    # ❯ 外側 3 点 → 内側 3 点の順
+    [
+        (3.75, 3.0),
+        (8.75, 8.0),
+        (3.75, 13.0),
+        (2.0, 11.25),
+        (5.25, 8.0),
+        (2.0, 4.75),
+    ],
+    # _
+    [
+        (8.25, 11.0),
+        (13.75, 11.0),
+        (13.75, 13.0),
+        (8.25, 13.0),
+    ],
 ]
 
 
@@ -59,13 +69,16 @@ def inside_polygon(x: float, y: float, polygon: list[tuple[float, float]]) -> bo
     return hit
 
 
+def inside_glyph(x: float, y: float, polygons: list[list[tuple[float, float]]]) -> bool:
+    return any(inside_polygon(x, y, polygon) for polygon in polygons)
+
+
 def render(size: int) -> bytes:
     """RGBA の生ピクセル列を返す。"""
-    scale = size * SUPERSAMPLE
     radius = size * CORNER_RADIUS
-    # スパークルは 16 単位系なので描画サイズに合わせる
+    # グリフは 16 単位系なので描画サイズに合わせる
     unit = size / 16.0
-    sparkle = [(px * unit, py * unit) for px, py in SPARKLE]
+    glyph = [[(px * unit, py * unit) for px, py in polygon] for polygon in GLYPH]
 
     rows = bytearray()
     samples = SUPERSAMPLE * SUPERSAMPLE
@@ -81,7 +94,7 @@ def render(size: int) -> bytes:
                     if not inside_rounded_rect(x, y, size, radius):
                         continue
                     covered += 1
-                    if inside_polygon(x, y, sparkle):
+                    if inside_glyph(x, y, glyph):
                         marked += 1
             if covered == 0:
                 rows.extend((0, 0, 0, 0))
