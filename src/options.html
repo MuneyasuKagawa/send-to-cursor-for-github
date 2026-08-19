@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>GitHub Cursor Link の設定</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main>
+      <h1>GitHub Cursor Link</h1>
+
+      <section>
+        <h2>リンクの開き方</h2>
+        <label class="radio">
+          <input type="radio" name="linkMode" value="protocol" />
+          <span>
+            <strong><code>cursor://</code> で直接開く</strong>
+            <small>Cursor アプリを直接起動します。通常はこちら。</small>
+          </span>
+        </label>
+        <label class="radio">
+          <input type="radio" name="linkMode" value="web" />
+          <span>
+            <strong><code>https://cursor.com/link/</code> を経由する</strong>
+            <small>
+              直接起動が Chrome にブロックされる場合の代替。いったん cursor.com を開いてから
+              Cursor に渡します。
+            </small>
+          </span>
+        </label>
+      </section>
+
+      <section>
+        <h2>ボタンのラベル</h2>
+        <input type="text" id="buttonLabel" maxlength="20" />
+      </section>
+
+      <section>
+        <h2>プロンプトのテンプレート</h2>
+        <p class="hint">
+          使えるプレースホルダー:
+          <code>{{repository}}</code> <code>{{prNumber}}</code> <code>{{prTitle}}</code>
+          <code>{{prUrl}}</code> <code>{{headBranch}}</code> <code>{{headLabel}}</code>
+          <code>{{baseBranch}}</code> <code>{{commentUrl}}</code> <code>{{author}}</code>
+          <code>{{filePath}}</code> <code>{{lines}}</code> <code>{{commentBody}}</code>
+        </p>
+        <p class="hint">
+          値が取得できなかったプレースホルダーを含む行は、まるごと出力から削除されます。
+        </p>
+        <textarea id="promptTemplate" rows="26" spellcheck="false"></textarea>
+      </section>
+
+      <div class="actions">
+        <button id="save" type="button" class="primary">保存</button>
+        <button id="reset" type="button">テンプレートを既定値に戻す</button>
+        <span id="status" role="status" aria-live="polite"></span>
+      </div>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

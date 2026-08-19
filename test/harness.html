@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- GitHub の PR ページと同じ形式にしておく（タイトル抽出の確認用） -->
+    <title>Add list items endpoint by octocat · Pull Request #42 · octocat/hello-world · GitHub</title>
+    <link rel="stylesheet" href="/src/content.css" />
+    <style>
+      body {
+        font-family: -apple-system, sans-serif;
+        margin: 0;
+        padding: 16px;
+        font-size: 14px;
+      }
+      .harness-note {
+        padding: 8px 12px;
+        margin-bottom: 16px;
+        border: 1px solid #d1d9e0;
+        border-radius: 8px;
+        background: #f6f8fa;
+      }
+      .d-flex {
+        display: flex;
+        align-items: center;
+      }
+      .diff-table {
+        font-family: ui-monospace, monospace;
+        border-collapse: collapse;
+      }
+      .diff-table td {
+        padding: 0 6px;
+      }
+      form {
+        margin: 0;
+      }
+      #report {
+        white-space: pre-wrap;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        border-top: 1px solid #d1d9e0;
+        margin-top: 24px;
+        padding-top: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="harness-note">
+      拡張機能のロジック検証用ページ。<code>test/fixtures/review-thread.html</code> を読み込み、
+      content script と同じ処理を実行する。
+    </div>
+
+    <!-- PR ヘッダー相当（ブランチ抽出の確認用） -->
+    <div>
+      <span class="commit-ref user-select-contain">
+        <span class="base-ref">
+          <span class="css-truncate-target user">octocat</span>:<span class="css-truncate-target"
+            >main</span
+          >
+        </span>
+      </span>
+      <span class="commit-ref user-select-contain width-fit">
+        <span class="css-truncate css-truncate-target width-fit">feature/add-list-endpoint</span>
+      </span>
+    </div>
+
+    <div id="fixture"></div>
+    <div id="report"></div>
+
+    <script>
+      // content script が使う chrome.storage の最小限のスタブ（既定値をそのまま返す）
+      window.chrome = {
+        storage: {
+          sync: { get: async (defaults) => defaults },
+          onChanged: { addListener() {} },
+        },
+      };
+    </script>
+    <script>
+      (async () => {
+        const report = document.getElementById('report');
+        try {
+          const html = await (await fetch('/test/fixtures/review-thread.html')).text();
+          document.getElementById('fixture').innerHTML = html;
+
+          for (const src of [
+            '/src/config.js',
+            '/src/prompt.js',
+            '/src/extract.js',
+            '/src/content.js',
+          ]) {
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = src;
+              script.onload = resolve;
+              script.onerror = () => reject(new Error(`failed to load ${src}`));
+              document.head.appendChild(script);
+            });
+          }
+
+          // content script は document_idle 相当で自走するので、挿入完了を待って結果を出す
+          await new Promise((resolve) => setTimeout(resolve, 400));
+          const buttons = [...document.querySelectorAll('.ghcl-button')];
+          report.textContent = [
+            `PR context: ${JSON.stringify(GHCursorLink.getPullRequestContext(), null, 2)}`,
+            `buttons: ${buttons.length}`,
+            ...buttons.map((button, index) => {
+              const prompt = decodeURIComponent(button.href.split('?text=')[1] || '');
+              return `\n--- button #${index + 1} (url ${button.href.length} chars) ---\n${prompt}`;
+            }),
+          ].join('\n');
+        } catch (error) {
+          report.textContent = `ERROR: ${error.message}\n${error.stack}`;
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+.DS_Store
+
+# 実際の PR ページを保存した HTML はコミットしない。
+# コードやレビュー内容、CSRF トークン、アバター URL などがそのまま含まれる。
+sample_*.html
+*.saved.html

@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Cursor Link",
+  "version": "1.0.0",
+  "description": "GitHub の PR コメントに、そのコメントを検証するプロンプト付きで Cursor の新規チャットを開くボタンを追加します。",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": [
+        "src/config.js",
+        "src/prompt.js",
+        "src/extract.js",
+        "src/content.js"
+      ],
+      "css": ["src/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "src/options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "GitHub Cursor Link",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

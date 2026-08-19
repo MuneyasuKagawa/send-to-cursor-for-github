@@ -1,0 +1,299 @@
+<!--
+  GitHub の PR 会話タブに描画されるレビュースレッドの DOM を再現したフィクスチャ。
+  実際の PR を保存したものではなく、抽出処理が参照する要素だけを残した架空の内容。
+
+  抽出処理が依存している要素:
+    - a.text-mono                                  対象ファイルのパス
+    - .js-multi-line-preview-start / -end          対象行
+    - .timeline-comment-actions clipboard-copy[value]  コメント本文の Markdown 原文
+    - .author / a.js-timestamp                     投稿者 / コメントの permalink
+    - .js-comment-body                             原文が取れないときのフォールバック
+    - .comment-reactions > reactions-menu          ボタンの挿入位置
+-->
+<review-thread-collapsible
+  class="review-thread-component js-comment-container js-resolvable-timeline-thread-container border rounded-2 d-block tmp-mb-3 open"
+  data-resolved="true"
+>
+  <div class="d-flex flex-items-center p-2 rounded-top-2 bgColor-muted js-toggle-outdated-comments">
+    <span class="flex-auto tmp-mr-3 d-flex flex-items-center">
+      <a
+        href="/octocat/hello-world/pull/42/files/0123456789abcdef#diff-0123456789abcdef"
+        class="text-mono text-small Link--primary wb-break-all mr-2"
+        >internal/api/response.go</a
+      >
+    </span>
+  </div>
+
+  <div data-target="review-thread-collapsible.body">
+    <div class="f6 py-2 tmp-px-3 border-bottom d-flex flex-justify-between">
+      <div class="f6 color-fg-muted">
+        Comment on lines
+        <span class="js-multi-line-preview-start color-fg-success"> +17 </span>
+        to <span class="js-multi-line-preview-end color-fg-success"> +19 </span>
+      </div>
+    </div>
+
+    <div class="blob-wrapper border-bottom">
+      <table class="diff-table tab-size js-diff-table" data-tab-size="4">
+        <tbody>
+          <tr>
+            <td class="blob-num blob-num-addition empty-cell"></td>
+            <td data-line-number="17" class="blob-num blob-num-addition"></td>
+            <td class="blob-code blob-code-addition">
+              <span class="blob-code-inner blob-code-marker-addition">)</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="blob-num blob-num-addition empty-cell"></td>
+            <td data-line-number="18" class="blob-num blob-num-addition"></td>
+            <td class="blob-code blob-code-addition">
+              <span class="blob-code-inner blob-code-marker-addition"><br /></span>
+            </td>
+          </tr>
+          <tr>
+            <td class="blob-num blob-num-addition empty-cell"></td>
+            <td data-line-number="19" class="blob-num blob-num-addition"></td>
+            <td class="blob-code blob-code-addition">
+              <span class="blob-code-inner blob-code-marker-addition"
+                >type listItemsResponse struct {</span
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="js-inline-comments-container">
+      <div
+        class="js-line-comments js-suggested-changes-container js-quote-selection-container"
+        data-quote-markdown=".js-comment-body"
+      >
+        <div class="js-comments-holder">
+          <!-- 1 件目: バッジ画像リンクと折りたたみブロックを含む bot コメント -->
+          <div
+            id="discussion_r1000000001"
+            class="timeline-comment-group js-minimizable-comment-group js-targetable-element my-0 comment previewable-edit js-task-list-container js-comment review-comment js-minimize-container unminimized-comment"
+          >
+            <div class="ml-n1 flex-items-center clearfix d-flex flex-row flex-items-start">
+              <h3 class="f5 text-normal py-2" style="flex: 1 1 auto">
+                <div class="d-flex flex-items-center flex-wrap gap-1">
+                  <strong>
+                    <a class="author Link--primary text-bold" href="/apps/review-bot">review-bot</a>
+                    <span class="Label Label--secondary">Bot</span>
+                  </strong>
+                  <a
+                    href="#discussion_r1000000001"
+                    id="discussion_r1000000001-permalink"
+                    class="Link--secondary js-timestamp"
+                    ><relative-time datetime="2026-01-05T00:56:32Z" class="no-wrap"
+                      >Jan 5, 2026</relative-time
+                    ></a
+                  >
+                </div>
+              </h3>
+
+              <div class="d-flex flex-row-reverse flex-items-center flex-shrink-0 tmp-pl-3">
+                <div class="timeline-comment-actions flex-shrink-0 d-flex flex-items-center">
+                  <details class="details-overlay details-reset position-relative d-inline-block">
+                    <summary
+                      class="timeline-comment-action Link--secondary Button--link Button--medium Button"
+                      aria-haspopup="menu"
+                      role="button"
+                      >…</summary
+                    >
+                    <details-menu class="dropdown-menu dropdown-menu-sw show-more-popover">
+                      <span>
+                        <clipboard-copy
+                          aria-label="Copy link"
+                          for="discussion_r1000000001-permalink"
+                          role="menuitem"
+                          class="dropdown-item btn-link"
+                          >Copy link</clipboard-copy
+                        >
+                      </span>
+                      <span>
+                        <clipboard-copy
+                          role="menuitem"
+                          class="dropdown-item btn-link"
+                          value='&lt;a href="#"&gt;&lt;img alt="P2" src="https://example.invalid/badges/p2.svg" align="top"&gt;&lt;/a&gt; **Missing doc comments on response structs**
+
+The four newly added response structs such as `listItemsResponse` have no doc comments, which makes it hard to tell what each type represents in the API response. Please add a doc comment to each struct in this file.
+
+**File Used:** .cursor/rules/go.mdc ([source](.cursor/rules/go.mdc))
+
+&lt;details&gt;&lt;summary&gt;Suggested change&lt;/summary&gt;
+
+```go
+// listItemsResponse is the response body of GET /items.
+type listItemsResponse struct {
+```
+&lt;/details&gt;
+
+Note: If this suggestion doesn&apos;t match your team&apos;s coding style, reply to this and let me know.
+
+&lt;a href="https://example.invalid/open-in-cursor?prompt=This%20is%20a%20comment%20left%20during%20a%20code%20review."&gt;&lt;picture&gt;&lt;source media="(prefers-color-scheme: dark)" srcset="https://example.invalid/badges/open-in-cursor-dark.svg"&gt;&lt;source media="(prefers-color-scheme: light)" srcset="https://example.invalid/badges/open-in-cursor.svg"&gt;&lt;img alt="Open in Cursor" src="https://example.invalid/badges/open-in-cursor.svg"&gt;&lt;/picture&gt;&lt;/a&gt;'
+                          >Copy Markdown</clipboard-copy
+                        >
+                      </span>
+                    </details-menu>
+                  </details>
+                </div>
+              </div>
+            </div>
+
+            <div class="edit-comment-hide">
+              <div
+                class="comment-body markdown-body js-comment-body soft-wrap user-select-contain d-block css-overflow-wrap-anywhere"
+              >
+                <p><strong>Missing doc comments on response structs</strong></p>
+                <p>
+                  The four newly added response structs such as <code>listItemsResponse</code> have
+                  no doc comments, which makes it hard to tell what each type represents in the API
+                  response. Please add a doc comment to each struct in this file.
+                </p>
+                <details><summary>Suggested change</summary></details>
+              </div>
+            </div>
+
+            <div class="tmp-ml-5 edit-comment-hide">
+              <div
+                class="comment-reactions just-bottom js-reactions-container js-reaction-buttons-container social-reactions reactions-container has-reactions d-flex"
+              >
+                <reactions-menu tabindex="-1">
+                  <details
+                    class="dropdown details-reset details-overlay d-inline-block new-reactions-dropdown js-reaction-popover-container js-comment-header-reaction-button"
+                  >
+                    <summary
+                      aria-label="Add or remove reactions"
+                      aria-haspopup="true"
+                      class="circle reaction-dropdown-button reaction-dropdown-button--inline btn-invisible btn p-0 tmp-p-0 mr-1 tmp-mr-1 d-flex flex-justify-center flex-items-center color-bg-subtle border color-border-muted"
+                    >
+                      <svg
+                        height="18"
+                        width="18"
+                        viewBox="0 0 16 16"
+                        aria-hidden="true"
+                        class="octicon octicon-smiley social-button-emoji"
+                      >
+                        <path
+                          d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"
+                        ></path>
+                      </svg>
+                    </summary>
+                  </details>
+                </reactions-menu>
+                <form class="js-pick-reaction" action="/octocat/hello-world/reactions" method="post">
+                  <div class="js-comment-reactions-options d-flex flex-items-center flex-row flex-wrap">
+                    <button
+                      name="input[content]"
+                      value="THUMBS_UP unreact"
+                      type="submit"
+                      class="social-reaction-summary-item js-reaction-group-button user-has-reacted tmp-mr-1 btn-link d-flex no-underline flex-items-baseline"
+                    >
+                      <g-emoji alias="+1" class="social-button-emoji">👍</g-emoji>
+                      <span class="js-discussion-reaction-group-count">1</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2 件目: 人間による返信（リアクションなし = リアクション行が d-flex のみ） -->
+          <div
+            id="discussion_r1000000002"
+            class="timeline-comment-group js-minimizable-comment-group js-targetable-element my-0 comment previewable-edit js-task-list-container js-comment review-comment js-minimize-container current-user unminimized-comment"
+          >
+            <div class="ml-n1 flex-items-center clearfix d-flex flex-row flex-items-start">
+              <h3 class="f5 text-normal py-2" style="flex: 1 1 auto">
+                <div class="d-flex flex-items-center flex-wrap gap-1">
+                  <strong>
+                    <a class="author Link--primary text-bold" href="/octocat">octocat</a>
+                  </strong>
+                  <a
+                    href="#discussion_r1000000002"
+                    id="discussion_r1000000002-permalink"
+                    class="Link--secondary js-timestamp"
+                    ><relative-time datetime="2026-01-05T02:10:00Z" class="no-wrap"
+                      >Jan 5, 2026</relative-time
+                    ></a
+                  >
+                </div>
+              </h3>
+
+              <div class="d-flex flex-row-reverse flex-items-center flex-shrink-0 tmp-pl-3">
+                <div class="timeline-comment-actions flex-shrink-0 d-flex flex-items-center">
+                  <details class="details-overlay details-reset position-relative d-inline-block">
+                    <summary
+                      class="timeline-comment-action Link--secondary Button--link Button--medium Button"
+                      aria-haspopup="menu"
+                      role="button"
+                      >…</summary
+                    >
+                    <details-menu class="dropdown-menu dropdown-menu-sw show-more-popover">
+                      <span>
+                        <clipboard-copy
+                          aria-label="Copy link"
+                          for="discussion_r1000000002-permalink"
+                          role="menuitem"
+                          class="dropdown-item btn-link"
+                          >Copy link</clipboard-copy
+                        >
+                      </span>
+                      <span>
+                        <clipboard-copy
+                          role="menuitem"
+                          class="dropdown-item btn-link"
+                          value="Valid point. Fixed in the latest commit."
+                          >Copy Markdown</clipboard-copy
+                        >
+                      </span>
+                    </details-menu>
+                  </details>
+                </div>
+              </div>
+            </div>
+
+            <div class="edit-comment-hide">
+              <div
+                class="comment-body markdown-body js-comment-body soft-wrap user-select-contain d-block css-overflow-wrap-anywhere"
+              >
+                <p>Valid point. Fixed in the latest commit.</p>
+              </div>
+            </div>
+
+            <div class="tmp-ml-5 edit-comment-hide">
+              <div
+                class="comment-reactions just-bottom js-reactions-container js-reaction-buttons-container social-reactions reactions-container d-flex"
+              >
+                <reactions-menu tabindex="-1">
+                  <details
+                    class="dropdown details-reset details-overlay d-inline-block new-reactions-dropdown js-reaction-popover-container js-comment-header-reaction-button"
+                  >
+                    <summary
+                      aria-label="Add or remove reactions"
+                      aria-haspopup="true"
+                      class="circle reaction-dropdown-button reaction-dropdown-button--inline btn-invisible btn p-0 tmp-p-0 mr-1 tmp-mr-1 d-flex flex-justify-center flex-items-center color-bg-subtle border color-border-muted"
+                    >
+                      <svg
+                        height="18"
+                        width="18"
+                        viewBox="0 0 16 16"
+                        aria-hidden="true"
+                        class="octicon octicon-smiley social-button-emoji"
+                      >
+                        <path
+                          d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"
+                        ></path>
+                      </svg>
+                    </summary>
+                  </details>
+                </reactions-menu>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</review-thread-collapsible>
