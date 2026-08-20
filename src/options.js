@@ -5,12 +5,11 @@
  * 組み立てる。文言はすべて src/locales/*.js 経由なので、対象や言語を増やしてもここは触らない。
  */
 (function (ns) {
-  const tabs = document.getElementById('tabs');
-  const panels = document.getElementById('panels');
-  const status = document.getElementById('status');
-  const languageSelect = document.getElementById('language');
-  const buttonLabel = document.getElementById('buttonLabel');
-  const showLabel = document.getElementById('showLabel');
+  const tabs = document.getElementById("tabs");
+  const panels = document.getElementById("panels");
+  const status = document.getElementById("status");
+  const buttonLabel = document.getElementById("buttonLabel");
+  const showLabel = document.getElementById("showLabel");
 
   /** target.id -> { enabled: HTMLInputElement, template: HTMLTextAreaElement } */
   const controls = new Map();
@@ -22,7 +21,7 @@
   const caretByTextarea = new WeakMap();
 
   let language = ns.DEFAULT_LANGUAGE;
-  let activeTab = 'general';
+  let activeTab = "general";
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -35,6 +34,17 @@
     return [...document.querySelectorAll('input[name="linkMode"]')];
   }
 
+  function languageInputs() {
+    return [...document.querySelectorAll('input[name="language"]')];
+  }
+
+  /** 表示中の言語に選択を合わせる。切り替えに失敗したときの巻き戻しにも使う。 */
+  function syncLanguageInputs() {
+    for (const input of languageInputs()) {
+      input.checked = input.value === language;
+    }
+  }
+
   function syncLabelInput() {
     buttonLabel.disabled = !showLabel.checked;
   }
@@ -43,20 +53,20 @@
 
   /** メッセージ中の `...` を code 要素にする。cursor:// のような字面を地の文と区別するため。 */
   function setMessage(node, text) {
-    node.textContent = '';
+    node.textContent = "";
     String(text)
       .split(/`([^`]+)`/)
       .forEach((part, index) => {
         if (!part) return;
-        node.append(index % 2 ? element('code', null, part) : part);
+        node.append(index % 2 ? element("code", null, part) : part);
       });
   }
 
   /** 静的な HTML 側の文言。対象のパネルは作り直すので data-i18n を持たない。 */
   function localize() {
     document.documentElement.lang = language;
-    document.title = ns.t('options.title');
-    for (const node of document.querySelectorAll('[data-i18n]')) {
+    document.title = ns.t("options.title");
+    for (const node of document.querySelectorAll("[data-i18n]")) {
       setMessage(node, ns.t(node.dataset.i18n));
     }
   }
@@ -64,12 +74,12 @@
   // --- タブ -----------------------------------------------------------------
 
   function addTab(id, label) {
-    const button = element('button', 'tab', label);
-    button.type = 'button';
+    const button = element("button", "tab", label);
+    button.type = "button";
     button.id = `tab-${id}`;
-    button.setAttribute('role', 'tab');
-    button.setAttribute('aria-controls', `panel-${id}`);
-    button.addEventListener('click', () => selectTab(id));
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-controls", `panel-${id}`);
+    button.addEventListener("click", () => selectTab(id));
     tabButtons.set(id, button);
     tabs.append(button);
     return button;
@@ -85,25 +95,25 @@
     if (!control || !button) return;
 
     const off = !control.enabled.checked;
-    control.prompt.toggleAttribute('data-collapsed', off);
-    const badge = button.querySelector('.tab-off');
+    control.prompt.toggleAttribute("data-collapsed", off);
+    const badge = button.querySelector(".tab-off");
     if (badge) badge.hidden = !off;
-    button.classList.toggle('tab--off', off);
+    button.classList.toggle("tab--off", off);
   }
 
   function selectTab(id, { focus = false } = {}) {
-    if (!tabButtons.has(id)) id = 'general';
+    if (!tabButtons.has(id)) id = "general";
     activeTab = id;
     for (const [tabId, button] of tabButtons) {
       const selected = tabId === id;
-      button.setAttribute('aria-selected', String(selected));
+      button.setAttribute("aria-selected", String(selected));
       // 選択中のタブだけを Tab キーの対象にし、タブ間は矢印キーで移動する
       button.tabIndex = selected ? 0 : -1;
       document.getElementById(`panel-${tabId}`).hidden = !selected;
     }
     if (focus) tabButtons.get(id).focus();
     // 履歴を増やさずに、再読み込みしても同じタブに戻れるようにする
-    history.replaceState(null, '', `#${id}`);
+    history.replaceState(null, "", `#${id}`);
   }
 
   function onTabKeydown(event) {
@@ -134,7 +144,7 @@
       end: textarea.value.length,
     };
     textarea.focus();
-    textarea.setRangeText(`{{${name}}}`, caret.start, caret.end, 'end');
+    textarea.setRangeText(`{{${name}}}`, caret.start, caret.end, "end");
     rememberCaret(textarea);
   }
 
@@ -146,74 +156,77 @@
   }
 
   function placeholderButton(name, textarea) {
-    const button = element('button', 'placeholder', `{{${name}}}`);
-    button.type = 'button';
+    const button = element("button", "placeholder", `{{${name}}}`);
+    button.type = "button";
     button.title = ns.placeholderHint(name);
     // フォーカスが移るとカーソル位置が分からなくなるので、textarea から外さない
-    button.addEventListener('mousedown', (event) => event.preventDefault());
-    button.addEventListener('click', () => insertPlaceholder(textarea, name));
+    button.addEventListener("mousedown", (event) => event.preventDefault());
+    button.addEventListener("click", () => insertPlaceholder(textarea, name));
     return button;
   }
 
   function placeholderHint(target, textarea) {
-    const hint = element('p', 'hint');
-    hint.append(`${ns.t('options.target.insert')} `);
+    const hint = element("p", "hint");
+    hint.append(`${ns.t("options.target.insert")} `);
     for (const name of target.placeholders) {
-      hint.append(placeholderButton(name, textarea), ' ');
+      hint.append(placeholderButton(name, textarea), " ");
     }
     return hint;
   }
 
   function buildTargetPanel(target) {
-    const panel = element('section', 'panel');
+    const panel = element("section", "panel");
     panel.id = `panel-${target.id}`;
-    panel.dataset.targetPanel = '';
-    panel.setAttribute('role', 'tabpanel');
-    panel.setAttribute('aria-labelledby', `tab-${target.id}`);
+    panel.dataset.targetPanel = "";
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("aria-labelledby", `tab-${target.id}`);
     panel.hidden = true;
 
-    const enabled = document.createElement('input');
-    enabled.type = 'checkbox';
+    const enabled = document.createElement("input");
+    enabled.type = "checkbox";
     enabled.id = `enabled-${target.id}`;
     // 見た目に合わせて「スイッチ」として読み上げさせる（チェックボックスではなくオン/オフ）
-    enabled.setAttribute('role', 'switch');
-    enabled.addEventListener('change', () => {
+    enabled.setAttribute("role", "switch");
+    enabled.addEventListener("change", () => {
       syncTarget(target.id);
       saveNow();
     });
-    const toggle = element('label', 'toggle');
-    toggle.append(enabled, element('span', null, ns.t('options.target.enabled')));
+    const toggle = element("label", "toggle");
+    toggle.append(
+      enabled,
+      element("span", null, ns.t("options.target.enabled")),
+    );
 
     // 見出しを textarea の名前にする（見出しの下にひとつだけある入力欄なので）
-    const promptTitle = element('h3', null, ns.t('options.target.prompt'));
+    const promptTitle = element("h3", null, ns.t("options.target.prompt"));
     promptTitle.id = `prompt-${target.id}`;
 
-    const template = document.createElement('textarea');
+    const template = document.createElement("textarea");
     template.id = `template-${target.id}`;
-    template.setAttribute('aria-labelledby', promptTitle.id);
+    template.setAttribute("aria-labelledby", promptTitle.id);
     template.rows = 22;
     template.spellcheck = false;
-    for (const event of ['keyup', 'mouseup', 'select', 'blur']) {
+    for (const event of ["keyup", "mouseup", "select", "blur"]) {
       template.addEventListener(event, () => rememberCaret(template));
     }
-    template.addEventListener('input', saveSoon);
+    template.addEventListener("input", saveSoon);
 
-    const reset = element('button', null, ns.t('options.target.reset'));
-    reset.type = 'button';
-    reset.addEventListener('click', () => {
+    const reset = element("button", null, ns.t("options.target.reset"));
+    reset.type = "button";
+    reset.addEventListener("click", () => {
       template.value = ns.defaultTemplate(target.id);
       // 戻す前のカーソル位置は新しい本文では意味を持たないので捨てる
       caretByTextarea.delete(template);
-      saveNow(ns.t('options.status.reset', { name: ns.targetName(target.id) }));
+      saveNow(ns.t("options.status.reset", { name: ns.targetName(target.id) }));
     });
 
     // オフのときにたたむ範囲。高さを詰めるのに overflow を切るので、入れ子にして
     // 外側 (.collapse) で高さを、内側で切り取りを担当させる。
-    const prompt = element('div', 'collapse');
-    const inner = element('div');
+    const prompt = element("div", "collapse");
+    const inner = element("div");
     inner.append(
       promptTitle,
-      element('p', 'hint', ns.t('options.target.promptHint')),
+      element("p", "hint", ns.t("options.target.promptHint")),
       placeholderHint(target, template),
       template,
       reset,
@@ -221,8 +234,8 @@
     prompt.append(inner);
 
     panel.append(
-      element('h2', null, ns.targetName(target.id)),
-      element('p', 'hint', ns.targetDescription(target.id)),
+      element("h2", null, ns.targetName(target.id)),
+      element("p", "hint", ns.targetDescription(target.id)),
       toggle,
       prompt,
     );
@@ -233,15 +246,16 @@
 
   /** タブと対象のパネルを作り直す。言語を切り替えたときもこれで丸ごと差し替える。 */
   function render() {
-    for (const panel of panels.querySelectorAll('[data-target-panel]')) panel.remove();
-    tabs.textContent = '';
+    for (const panel of panels.querySelectorAll("[data-target-panel]"))
+      panel.remove();
+    tabs.textContent = "";
     tabButtons.clear();
     controls.clear();
 
-    addTab('general', ns.t('options.tab.general'));
+    addTab("general", ns.t("options.tab.general"));
     for (const target of ns.TARGETS) {
       panels.append(buildTargetPanel(target));
-      const badge = element('span', 'tab-off', ns.t('options.tab.off'));
+      const badge = element("span", "tab-off", ns.t("options.tab.off"));
       badge.hidden = true;
       addTab(target.id, ns.targetName(target.id)).append(badge);
     }
@@ -250,7 +264,7 @@
   }
 
   function apply(settings) {
-    languageSelect.value = settings.language;
+    syncLanguageInputs();
     buttonLabel.value = settings.buttonLabel;
     showLabel.checked = settings.showLabel !== false;
     syncLabelInput();
@@ -281,11 +295,11 @@
   /** エラーは消さずに残す。放っておくと、保存できていないのに設定できたと誤解される。 */
   function showStatus(message, isError = false) {
     status.textContent = message;
-    status.classList.toggle('error', isError);
+    status.classList.toggle("error", isError);
     clearTimeout(statusTimer);
     if (isError) return;
     statusTimer = setTimeout(() => {
-      status.textContent = '';
+      status.textContent = "";
     }, 2600);
   }
 
@@ -299,7 +313,7 @@
     for (const [id, control] of controls) {
       const value = control.template.value;
       const customized = value.trim() && value !== ns.defaultTemplate(id);
-      payload[ns.templateKey(id, language)] = customized ? value : '';
+      payload[ns.templateKey(id, language)] = customized ? value : "";
     }
     return payload;
   }
@@ -324,7 +338,7 @@
       const key = ns.templateKey(id, language);
       const bytes = itemBytes(key, payload[key]);
       if (bytes > ITEM_LIMIT) {
-        return ns.t('options.status.oversized', {
+        return ns.t("options.status.oversized", {
           name: ns.targetName(id),
           bytes,
           limit: ITEM_LIMIT,
@@ -357,18 +371,21 @@
         ...templates,
       });
       // 空文字でも呼ぶ。保存できたなら、前に出したエラーは消さないといけない。
-      showStatus(message || '');
+      showStatus(message || "");
       return true;
     } catch (error) {
       // 書き込み回数の上限などは事前に判定できないので、返ってきたメッセージをそのまま添える
-      showStatus(ns.t('options.status.saveFailed', { error: error.message }), true);
+      showStatus(
+        ns.t("options.status.saveFailed", { error: error.message }),
+        true,
+      );
       return false;
     }
   }
 
   let saveTimer = null;
 
-  function saveNow(message = ns.t('options.status.saved')) {
+  function saveNow(message = ns.t("options.status.saved")) {
     clearTimeout(saveTimer);
     saveTimer = null;
     return save(message);
@@ -395,20 +412,23 @@
 
     // 保存できないまま切り替えると、編集中のプロンプトが表示から消えて戻せなくなる
     if (!(await save())) {
-      languageSelect.value = language;
+      syncLanguageInputs();
       return;
     }
 
     try {
       await chrome.storage.sync.set({ language: next });
     } catch (error) {
-      showStatus(ns.t('options.status.saveFailed', { error: error.message }), true);
-      languageSelect.value = language;
+      showStatus(
+        ns.t("options.status.saveFailed", { error: error.message }),
+        true,
+      );
+      syncLanguageInputs();
       return;
     }
 
     await load();
-    showStatus(ns.t('options.status.saved'));
+    showStatus(ns.t("options.status.saved"));
   }
 
   function resetAllTemplates() {
@@ -416,7 +436,7 @@
       control.template.value = ns.defaultTemplate(id);
       caretByTextarea.delete(control.template);
     }
-    saveNow(ns.t('options.status.resetAll'));
+    saveNow(ns.t("options.status.resetAll"));
   }
 
   /**
@@ -425,7 +445,7 @@
    * かつ今の形で書き出せたことを確認してから消す（先に消すと移行前のプロンプトが失われる）。
    */
   async function dropLegacyKeys() {
-    if (language !== 'ja') return;
+    if (language !== "ja") return;
     const keys = ns.legacyTemplateKeys();
     try {
       const stored = await chrome.storage.sync.get(keys);
@@ -438,24 +458,28 @@
   }
 
   function watch() {
-    languageSelect.addEventListener('change', () => changeLanguage(languageSelect.value));
-    for (const input of linkModeInputs()) {
-      input.addEventListener('change', () => saveNow());
+    for (const input of languageInputs()) {
+      input.addEventListener("change", () => changeLanguage(input.value));
     }
-    showLabel.addEventListener('change', () => {
+    for (const input of linkModeInputs()) {
+      input.addEventListener("change", () => saveNow());
+    }
+    showLabel.addEventListener("change", () => {
       syncLabelInput();
       saveNow();
     });
-    buttonLabel.addEventListener('input', saveSoon);
-    document.getElementById('reset').addEventListener('click', resetAllTemplates);
-    tabs.addEventListener('keydown', onTabKeydown);
+    buttonLabel.addEventListener("input", saveSoon);
+    document
+      .getElementById("reset")
+      .addEventListener("click", resetAllTemplates);
+    tabs.addEventListener("keydown", onTabKeydown);
     // 待っている間にタブを離れられても取りこぼさない
-    document.addEventListener('visibilitychange', () => {
+    document.addEventListener("visibilitychange", () => {
       if (document.hidden && saveTimer) saveNow();
     });
   }
 
-  activeTab = location.hash.slice(1) || 'general';
+  activeTab = location.hash.slice(1) || "general";
   watch();
   load().then(dropLegacyKeys);
-})(GHCursorLink);
+})(SendToCursor);

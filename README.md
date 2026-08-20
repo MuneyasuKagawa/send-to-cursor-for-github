@@ -46,6 +46,10 @@ for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$
 
 対象をオフにすると、その対象のプロンプト欄はたたまれます。効かない設定を触れるままにしておくと、オンにし忘れたことに気づけないためです。たたむときは行を `1fr` から `0fr` へ変える grid のアニメーションを使い、中身の高さを数えずに閉じています。あわせて `visibility` も切り替えて、たたんだ欄に Tab キーで入らないようにしています。
 
+同じ理由で、「ラベルを表示する」をオフにするとラベルの入力欄は編集できなくなります。入力欄に `color` と `background` を指定しているとブラウザ既定の無効表示が上書きされて有効な欄と見分けが付かないので、枠線を破線にして地色を沈め、書けないことが分かるようにしています。
+
+ボタンには `line-height` を明示しています。ボタンは本文と違って既定が `line-height: normal` で、行の高さが実際に使われるフォントの縦幅で決まるため、同じ 13px でも日本語は 20px、英語は 16px になり、言語を切り替えるとタブの高さが変わってしまいます。
+
 オン/オフはトグルスイッチですが、実体は `input[type="checkbox"]` を CSS で見た目だけ変えたものです（ラベルのクリックや Space キーでの切り替えをそのまま使うため）。あわせて `role="switch"` を付け、読み上げも「チェックボックス」ではなく「スイッチ」に揃えています。どちらのアニメーションも `prefers-reduced-motion: reduce` のときは止めます。
 
 | タブ     | 項目                     | 既定値                                             | 説明                                                                                                                                   |
@@ -85,6 +89,8 @@ for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$
 `_locales` を使うのは、ブラウザ側が表示する `manifest.json` の `description` だけです。こちらは拡張の設定を読めないのでブラウザの言語に従い、`default_locale` を `ja` にしています。
 
 プロンプトは対象ごと・**言語ごと**に `template_<言語>_<対象 id>` のキーで保存します。言語を切り替えると既定値が切り替わるので、キーを共有すると片方の言語で編集した内容が意図せず引き継がれたり、既定値に戻したときに前の言語の文が残ったりします。分けておけば、日本語で編集した内容は英語に切り替えても失われず、戻せば元のまま出てきます。
+
+言語の選び方はプルダウンではなくラジオ 2 つにし、選択肢は「日本語」「English」と各言語での表記のままにして、見出しには地球アイコンを添えています。既定が日本語なので、日本語が読めない人は見出しの文字から言語切り替えだと判断できません（[Using &lt;select&gt; to Link to Localized Content | W3C](https://www.w3.org/International/questions/qa-navigation-select): "You cannot expect Web users who are not fluent in English to understand "Select language". Universally recognized icons communicate to people regardless of what language they speak." = 「英語に不慣れなウェブ利用者が『Select language』を理解できるとは期待できません。世界的に認識されているアイコンは、話す言語に関係なく人々に伝わります」）。同じ記事は、対応する言語が少ないならプルダウン自体をやめることを勧めています（"If your site supports only a handful of localized versions, it is probably better to avoid using a pull-down menu altogether and simply include links directly on the page." = 「対応するローカライズ版がごく少数なら、プルダウンメニューはいっさい使わず、ページに直接リンクを置く方がおそらく良いでしょう」）。閉じたプルダウンには現在値しか出ないので、2 言語なら両方を並べて "English" を読める状態にしておく方が見つけやすくなります。
 
 言語を切り替えるときは、まず**切り替え前の言語のキー**で今の入力内容を保存し、そのあとに言語を書き換えて読み直します（順序を逆にすると、日本語のプロンプトが英語のキーに書き込まれます）。言語を分ける前の `template_<対象 id>` や、さらに前の `templates` / `promptTemplate` はどれも日本語なので、日本語を表示しているときだけ読んで `template_ja_<対象 id>` に移し、移せたことを確認してから古いキーを消します。
 

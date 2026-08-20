@@ -46,6 +46,10 @@ The options page is split into "General" plus one tab per target. A target tab g
 
 Turning a target off collapses the prompt editor for it. Leaving a setting editable while it has no effect makes it easy to miss that the target was never turned on. The collapse is a grid animation that changes the row from `1fr` to `0fr`, so it closes without measuring the height of the content. `visibility` is switched along with it so that the Tab key does not move into a collapsed editor.
 
+For the same reason, turning off "Show the label" makes the label input uneditable. Setting `color` and `background` on the input overrides the browser's own disabled look and leaves it indistinguishable from an editable field, so the border becomes dashed and the fill is darkened to show that it cannot be typed into.
+
+Buttons set an explicit `line-height`. Unlike body text, a button defaults to `line-height: normal`, which lets the font actually used decide the height of the line, so at the same 13px it comes out as 20px for Japanese and 16px for English and the tabs change height when the language is switched.
+
 The on/off controls are toggle switches, but they are really `input[type="checkbox"]` elements restyled with CSS, so that clicking the label and toggling with the Space key keep working. `role="switch"` is set as well, so a screen reader says "switch" instead of "checkbox". Both animations stop under `prefers-reduced-motion: reduce`.
 
 | Tab        | Setting                   | Default                                                | Description                                                                                                                          |
@@ -85,6 +89,8 @@ Each target the button is added to is defined as one entry in `TARGETS` in `src/
 `_locales` is used only for the `description` in `manifest.json`, which the browser itself displays. That one cannot read the extension's settings, so it follows the browser language, with `default_locale` set to `ja`.
 
 Prompts are stored per target **and per language**, under the key `template_<language>_<target id>`. Switching the language switches the defaults, so sharing a key would carry an edit made in one language over to the other, or leave text from the previous language behind after a reset. Keeping them apart means an edit made in Japanese survives a switch to English and comes back unchanged.
+
+The language is chosen with two radio buttons rather than a pull-down, the options read "日本語" and "English" in their own language, and a globe icon sits next to the heading. Japanese is the default, so somebody who cannot read Japanese has no way to tell from the heading that this is the language switch ([Using &lt;select&gt; to Link to Localized Content | W3C](https://www.w3.org/International/questions/qa-navigation-select): "You cannot expect Web users who are not fluent in English to understand "Select language". Universally recognized icons communicate to people regardless of what language they speak."). The same article recommends dropping the pull-down altogether when only a few languages are supported ("If your site supports only a handful of localized versions, it is probably better to avoid using a pull-down menu altogether and simply include links directly on the page."). A closed pull-down shows only the current value, so with two languages it is easier to find if both are laid out and "English" is there to be read.
 
 When the language changes, the current input is saved under the key **of the previous language** first, and only then is the language rewritten and the settings read again (doing it the other way around writes the Japanese prompt into the English key). The pre-split `template_<target id>`, and the even older `templates` / `promptTemplate`, all hold Japanese, so they are read only while Japanese is being displayed, moved to `template_ja_<target id>`, and the old keys are removed only after the move is confirmed.
 
