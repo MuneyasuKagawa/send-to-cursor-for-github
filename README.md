@@ -30,7 +30,7 @@ for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$
 
 ## 設定
 
-`chrome://extensions` の拡張機能詳細から「拡張機能のオプション」を開くと、以下を変更できます。
+ツールバーの拡張機能アイコン（ピン留めしていない場合はパズルピースのメニュー内にある拡張機能名）をクリックすると設定ページが開き、以下を変更できます。`chrome://extensions` の拡張機能詳細にある「拡張機能のオプション」からも開けます。
 
 | 項目 | 既定値 | 説明 |
 | --- | --- | --- |
@@ -104,6 +104,7 @@ src/extract.js         GitHub の DOM から PR / コメント情報を抽出
 src/content.js         ボタンの生成と挿入、DOM 監視
 src/content.css        ボタンのスタイル
 src/options.*          設定ページ
+src/background.js      拡張機能アイコンのクリックで設定ページを開くサービスワーカー
 icons/icon.svg         アイコンのソース（PNG はここから生成）
 tools/serve_test.py    動作確認用のローカルサーバー
 test/harness.html      フィクスチャを使ったロジック確認ページ

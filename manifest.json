@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "GitHub の PR コメントに、そのコメントを検証するプロンプト付きで Cursor の新規チャットを開くボタンを追加します。",
   "permissions": ["storage"],
+  "background": {
+    "service_worker": "src/background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://github.com/*"],
