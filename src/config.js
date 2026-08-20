@@ -8,20 +8,25 @@
  * 表示名・説明・ツールチップ・プロンプトの既定値は言語で変わるため src/locales/*.js に置き、
  * このファイルには言語に依らない構造だけを置く。
  */
-var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
+var SendToCursor = globalThis.SendToCursor || (globalThis.SendToCursor = {});
 
 (function (ns) {
   const PR_CONTEXT_PLACEHOLDERS = [
-    'repository',
-    'prNumber',
-    'prTitle',
-    'prUrl',
-    'headBranch',
-    'headLabel',
-    'baseBranch',
+    "repository",
+    "prNumber",
+    "prTitle",
+    "prUrl",
+    "headBranch",
+    "headLabel",
+    "baseBranch",
   ];
 
-  const ISSUE_CONTEXT_PLACEHOLDERS = ['repository', 'issueNumber', 'issueTitle', 'issueUrl'];
+  const ISSUE_CONTEXT_PLACEHOLDERS = [
+    "repository",
+    "issueNumber",
+    "issueTitle",
+    "issueUrl",
+  ];
 
   /**
    * bodyKey は本文を差し込むプレースホルダー名。URL の長さ制限を超えたときに
@@ -29,36 +34,51 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
    */
   ns.TARGETS = [
     {
-      id: 'prReview',
-      bodyKey: 'prBody',
-      placeholders: [...PR_CONTEXT_PLACEHOLDERS, 'author', 'prBody'],
+      id: "prReview",
+      bodyKey: "prBody",
+      placeholders: [...PR_CONTEXT_PLACEHOLDERS, "author", "prBody"],
     },
     {
-      id: 'prComment',
-      bodyKey: 'commentBody',
+      id: "prComment",
+      bodyKey: "commentBody",
       placeholders: [
         ...PR_CONTEXT_PLACEHOLDERS,
-        'commentUrl',
-        'author',
-        'filePath',
-        'lines',
-        'commentBody',
+        "commentUrl",
+        "author",
+        "filePath",
+        "lines",
+        "commentBody",
       ],
     },
     {
-      id: 'ciFailure',
-      bodyKey: 'failureOutput',
-      placeholders: [...PR_CONTEXT_PLACEHOLDERS, 'checkName', 'checkUrl', 'failureOutput'],
+      id: "ciFailure",
+      bodyKey: "failureOutput",
+      placeholders: [
+        ...PR_CONTEXT_PLACEHOLDERS,
+        "checkName",
+        "checkUrl",
+        "failureOutput",
+      ],
     },
     {
-      id: 'issueBody',
-      bodyKey: 'issueBody',
-      placeholders: [...ISSUE_CONTEXT_PLACEHOLDERS, 'issueLabels', 'author', 'issueBody'],
+      id: "issueBody",
+      bodyKey: "issueBody",
+      placeholders: [
+        ...ISSUE_CONTEXT_PLACEHOLDERS,
+        "issueLabels",
+        "author",
+        "issueBody",
+      ],
     },
     {
-      id: 'issueComment',
-      bodyKey: 'commentBody',
-      placeholders: [...ISSUE_CONTEXT_PLACEHOLDERS, 'commentUrl', 'author', 'commentBody'],
+      id: "issueComment",
+      bodyKey: "commentBody",
+      placeholders: [
+        ...ISSUE_CONTEXT_PLACEHOLDERS,
+        "commentUrl",
+        "author",
+        "commentBody",
+      ],
     },
   ];
 
@@ -97,11 +117,13 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
     // 表示言語。ブラウザの UI 言語ではなく設定ページで選ぶ（src/i18n.js のコメント参照）
     language: ns.DEFAULT_LANGUAGE,
     // "protocol" = cursor://anysphere.cursor-deeplink/prompt, "web" = https://cursor.com/link/prompt
-    linkMode: 'protocol',
-    buttonLabel: 'Cursor',
+    linkMode: "protocol",
+    buttonLabel: "Cursor",
     // false のときはアイコンのみのボタンになる。buttonLabel は読み上げ用の名前として残る。
     showLabel: true,
-    enabledTargets: Object.fromEntries(ns.TARGETS.map((target) => [target.id, true])),
+    enabledTargets: Object.fromEntries(
+      ns.TARGETS.map((target) => [target.id, true]),
+    ),
   };
 
   ns.isTargetEnabled = function isTargetEnabled(settings, id) {
@@ -111,7 +133,7 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
   /** settings.templates には編集されたプロンプトだけが入る。無ければ既定値を使う。 */
   ns.templateFor = function templateFor(settings, id) {
     const stored = (settings.templates || {})[id];
-    if (typeof stored === 'string' && stored.trim()) return stored;
+    if (typeof stored === "string" && stored.trim()) return stored;
     return ns.defaultTemplate(id);
   };
 
@@ -128,7 +150,11 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
 
   /** 対象ごと・言語ごとのキーに移す前の保存形式。中身はすべて日本語のプロンプト。 */
   ns.legacyTemplateKeys = function legacyTemplateKeys() {
-    return ['promptTemplate', 'templates', ...ns.TARGETS.map((target) => `template_${target.id}`)];
+    return [
+      "promptTemplate",
+      "templates",
+      ...ns.TARGETS.map((target) => `template_${target.id}`),
+    ];
   };
 
   /**
@@ -139,16 +165,18 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
    * どれも日本語のプロンプトなので、日本語を表示しているときだけ引き継ぐ。
    */
   function storedTemplates(stored, language) {
-    const merged = (language === 'ja' && stored.templates) || {};
+    const merged = (language === "ja" && stored.templates) || {};
     const templates = {};
 
     for (const target of ns.TARGETS) {
       const candidates = [stored[ns.templateKey(target.id, language)]];
-      if (language === 'ja') {
+      if (language === "ja") {
         candidates.push(stored[`template_${target.id}`], merged[target.id]);
-        if (target.id === 'prComment') candidates.push(stored.promptTemplate);
+        if (target.id === "prComment") candidates.push(stored.promptTemplate);
       }
-      const value = candidates.find((item) => typeof item === 'string' && item.trim());
+      const value = candidates.find(
+        (item) => typeof item === "string" && item.trim(),
+      );
       if (value) templates[target.id] = value;
     }
 
@@ -175,8 +203,11 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
       ...ns.DEFAULTS,
       ...stored,
       language,
-      enabledTargets: { ...ns.DEFAULTS.enabledTargets, ...(stored.enabledTargets || {}) },
+      enabledTargets: {
+        ...ns.DEFAULTS.enabledTargets,
+        ...(stored.enabledTargets || {}),
+      },
       templates: storedTemplates(stored, language),
     };
   };
-})(GHCursorLink);
+})(SendToCursor);

@@ -5,7 +5,7 @@
  * page goes back to it. `{name}` is substituted by src/i18n.js, while `{{name}}` is a
  * prompt placeholder expanded by src/prompt.js.
  */
-var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
+var SendToCursor = globalThis.SendToCursor || (globalThis.SendToCursor = {});
 
 (function (ns) {
   /** Keeps the agent from working on the wrong branch (shared by targets that have branches) */
@@ -33,84 +33,90 @@ If it does not match, ask me to open the correct repository and then stop.`;
   ns.MESSAGES = ns.MESSAGES || {};
   ns.MESSAGES.en = {
     // --- Options page -----------------------------------------------------
-    'options.title': 'Send to Cursor for GitHub settings',
-    'options.tab.general': 'General',
-    'options.tab.off': 'Off',
+    "options.title": "Send to Cursor for GitHub settings",
+    "options.tab.general": "General",
+    "options.tab.off": "Off",
 
-    'options.language.title': 'Language',
-    'options.language.hint':
-      'Used for this options page, the button, and the default prompts. Prompts are stored per language, so your edits are kept when you switch.',
+    "options.language.title": "Language",
+    "options.language.hint":
+      "Used for this options page, the button, and the default prompts. Prompts are stored per language, so your edits are kept when you switch.",
 
-    'options.linkMode.title': 'How to open the link',
-    'options.linkMode.protocol.title': 'Open `cursor://` directly',
-    'options.linkMode.protocol.hint': 'Launches the Cursor app directly. Use this unless it fails.',
-    'options.linkMode.web.title': 'Go through `https://cursor.com/link/`',
-    'options.linkMode.web.hint':
-      'An alternative for when Chrome blocks the direct launch. Opens cursor.com first, which then hands the prompt to Cursor.',
+    "options.linkMode.title": "How to open the link",
+    "options.linkMode.protocol.title": "Open `cursor://` directly",
+    "options.linkMode.protocol.hint":
+      "Launches the Cursor app directly. Use this unless it fails.",
+    "options.linkMode.web.title": "Go through `https://cursor.com/link/`",
+    "options.linkMode.web.hint":
+      "An alternative for when Chrome blocks the direct launch. Opens cursor.com first, which then hands the prompt to Cursor.",
 
-    'options.label.title': 'Button label',
-    'options.label.show': 'Show the label',
-    'options.label.hint':
-      'Turn this off for an icon-only button. The label you typed is still used as the name for screen readers.',
+    "options.label.title": "Button label",
+    "options.label.show": "Show the label",
+    "options.label.hint":
+      "Turn this off for an icon-only button. The label you typed is still used as the name for screen readers.",
 
-    'options.target.enabled': 'Show the button for this target',
-    'options.target.prompt': 'Prompt',
-    'options.target.insert': 'Click to insert at the cursor:',
-    'options.target.promptHint':
-      'A line that contains a placeholder with no value is dropped as a whole, and a heading left with nothing under it is dropped with it.',
-    'options.target.reset': 'Reset to the default',
+    "options.target.enabled": "Show the button for this target",
+    "options.target.prompt": "Prompt",
+    "options.target.insert": "Click to insert at the cursor:",
+    "options.target.promptHint":
+      "A line that contains a placeholder with no value is dropped as a whole, and a heading left with nothing under it is dropped with it.",
+    "options.target.reset": "Reset to the default",
 
-    'options.reset.title': 'Resetting prompts',
-    'options.reset.hint':
-      'Resets the prompts for every target to the defaults for the current language. Your edits are lost. Each target can also be reset on its own.',
-    'options.reset.all': 'Reset all prompts to the defaults',
-    'options.status.saved': 'Saved',
-    'options.status.reset': 'Reset the prompt for "{name}" to the default',
-    'options.status.resetAll': 'Reset all prompts to the defaults',
-    'options.status.saveFailed': 'Could not save: {error}',
-    'options.status.oversized':
+    "options.reset.title": "Resetting prompts",
+    "options.reset.hint":
+      "Resets the prompts for every target to the defaults for the current language. Your edits are lost. Each target can also be reset on its own.",
+    "options.reset.all": "Reset all prompts to the defaults",
+    "options.status.saved": "Saved",
+    "options.status.reset": 'Reset the prompt for "{name}" to the default',
+    "options.status.resetAll": "Reset all prompts to the defaults",
+    "options.status.saveFailed": "Could not save: {error}",
+    "options.status.oversized":
       'The prompt for "{name}" is too long to save ({bytes} / {limit} bytes). It is saved once you shorten it.',
 
     // --- Button -----------------------------------------------------------
-    'button.copied': 'Copied',
-    'tooltip.truncated': '{tooltip} (the body was long, so part of it was cut)',
-    'tooltip.shiftToCopy': 'Shift-click to copy the prompt',
-    'prompt.truncationNote': '…(the rest was cut because the body is long)',
-    'log.injectFailed': 'Failed to insert the button',
+    "button.copied": "Copied",
+    "tooltip.truncated": "{tooltip} (the body was long, so part of it was cut)",
+    "tooltip.shiftToCopy": "Shift-click to copy the prompt",
+    "prompt.truncationNote": "…(the rest was cut because the body is long)",
+    "log.injectFailed": "Failed to insert the button",
 
     // --- Placeholder hints (shown on hover in the options page) -----------
-    'placeholders.repository': 'Repository name in owner/repo form',
-    'placeholders.prNumber': 'PR number (without the #)',
-    'placeholders.prTitle': 'PR title',
-    'placeholders.prUrl': 'URL of the PR page',
-    'placeholders.prBody':
-      'PR description (raw Markdown). Not available outside the Conversation tab, where it is empty',
-    'placeholders.headBranch': 'Working branch name (head)',
-    'placeholders.headLabel':
-      'Filled in owner:branch form only for a PR from a fork. Empty for a PR within the same repository',
-    'placeholders.baseBranch': 'Branch the PR merges into (base)',
-    'placeholders.author':
+    "placeholders.repository": "Repository name in owner/repo form",
+    "placeholders.prNumber": "PR number (without the #)",
+    "placeholders.prTitle": "PR title",
+    "placeholders.prUrl": "URL of the PR page",
+    "placeholders.prBody":
+      "PR description (raw Markdown). Not available outside the Conversation tab, where it is empty",
+    "placeholders.headBranch": "Working branch name (head)",
+    "placeholders.headLabel":
+      "Filled in owner:branch form only for a PR from a fork. Empty for a PR within the same repository",
+    "placeholders.baseBranch": "Branch the PR merges into (base)",
+    "placeholders.author":
       'Author of the comment. The PR author for "Whole pull request", the issue author for "Issue body"',
-    'placeholders.commentUrl': 'Link to that comment (with the anchor)',
-    'placeholders.commentBody': 'Comment body (raw Markdown). Images are removed and a long body is cut',
-    'placeholders.filePath': 'Path of the file the diff comment is on. Empty for a conversation comment',
-    'placeholders.lines': 'Line number the comment is on. 12-18 form for multiple lines',
-    'placeholders.checkName': 'Name of the failed check',
-    'placeholders.checkUrl': 'URL of the detail page for that check',
-    'placeholders.failureOutput':
-      'What could be read from the page (the status text, plus annotations when a single check is open). The full log is not included',
-    'placeholders.issueNumber': 'Issue number (without the #)',
-    'placeholders.issueTitle': 'Issue title',
-    'placeholders.issueUrl': 'URL of the issue page',
-    'placeholders.issueLabels': 'Comma-separated label names on the issue. Empty when there are none',
-    'placeholders.issueBody': 'Issue body (raw Markdown). Images are removed and a long body is cut',
+    "placeholders.commentUrl": "Link to that comment (with the anchor)",
+    "placeholders.commentBody":
+      "Comment body (raw Markdown). Images are removed and a long body is cut",
+    "placeholders.filePath":
+      "Path of the file the diff comment is on. Empty for a conversation comment",
+    "placeholders.lines":
+      "Line number the comment is on. 12-18 form for multiple lines",
+    "placeholders.checkName": "Name of the failed check",
+    "placeholders.checkUrl": "URL of the detail page for that check",
+    "placeholders.failureOutput":
+      "What could be read from the page (the status text, plus annotations when a single check is open). The full log is not included",
+    "placeholders.issueNumber": "Issue number (without the #)",
+    "placeholders.issueTitle": "Issue title",
+    "placeholders.issueUrl": "URL of the issue page",
+    "placeholders.issueLabels":
+      "Comma-separated label names on the issue. Empty when there are none",
+    "placeholders.issueBody":
+      "Issue body (raw Markdown). Images are removed and a long body is cut",
 
     // --- Targets ----------------------------------------------------------
-    'targets.prReview.name': 'Whole pull request',
-    'targets.prReview.description':
-      'Adds the button to the PR header and the PR description. Asks Cursor to review the whole diff of the PR.',
-    'targets.prReview.tooltip': 'Review this PR in Cursor',
-    'targets.prReview.template': `Review the changes in this GitHub pull request.
+    "targets.prReview.name": "Whole pull request",
+    "targets.prReview.description":
+      "Adds the button to the PR header and the PR description. Asks Cursor to review the whole diff of the PR.",
+    "targets.prReview.tooltip": "Review this PR in Cursor",
+    "targets.prReview.template": `Review the changes in this GitHub pull request.
 
 ## What to work on
 ${PR_TARGET_LINES}
@@ -130,11 +136,11 @@ ${CHECK_REPO_AND_BRANCH}
 6. Do not change any code at this stage; stop once you have presented the review.
 7. Write your answer in English.`,
 
-    'targets.prComment.name': 'Pull request comments',
-    'targets.prComment.description':
-      'Adds a button to review comments and conversation comments on a PR that checks the comment and proposes how to act on it.',
-    'targets.prComment.tooltip': 'Check this comment in Cursor',
-    'targets.prComment.template': `Check the content of a comment on this GitHub pull request and propose how to act on it.
+    "targets.prComment.name": "Pull request comments",
+    "targets.prComment.description":
+      "Adds a button to review comments and conversation comments on a PR that checks the comment and proposes how to act on it.",
+    "targets.prComment.tooltip": "Check this comment in Cursor",
+    "targets.prComment.template": `Check the content of a comment on this GitHub pull request and propose how to act on it.
 
 ## What to work on
 ${PR_TARGET_LINES}
@@ -158,11 +164,11 @@ ${CHECK_REPO_AND_BRANCH}
 5. Do not change any code at this stage; stop once you have presented your findings and proposal.
 6. Write your answer in English, whatever language the comment is in.`,
 
-    'targets.ciFailure.name': 'Failed CI checks',
-    'targets.ciFailure.description':
-      'Adds the button to failing rows in the check list of a PR. The full log cannot be read from the page, so the prompt asks for the cause to be investigated.',
-    'targets.ciFailure.tooltip': 'Investigate this CI failure in Cursor',
-    'targets.ciFailure.template': `Investigate why this GitHub CI check failed.
+    "targets.ciFailure.name": "Failed CI checks",
+    "targets.ciFailure.description":
+      "Adds the button to failing rows in the check list of a PR. The full log cannot be read from the page, so the prompt asks for the cause to be investigated.",
+    "targets.ciFailure.tooltip": "Investigate this CI failure in Cursor",
+    "targets.ciFailure.template": `Investigate why this GitHub CI check failed.
 
 ## What to work on
 ${PR_TARGET_LINES}
@@ -185,11 +191,11 @@ ${CHECK_REPO_AND_BRANCH}
 6. Do not change any code at this stage; stop once you have presented the cause and the proposed fix.
 7. Write your answer in English.`,
 
-    'targets.issueBody.name': 'Issue body',
-    'targets.issueBody.description':
-      'Adds the button to the issue description. Asks Cursor to plan how to implement what the issue asks for.',
-    'targets.issueBody.tooltip': 'Plan this issue in Cursor',
-    'targets.issueBody.template': `Take in this GitHub issue and propose a plan for implementing it.
+    "targets.issueBody.name": "Issue body",
+    "targets.issueBody.description":
+      "Adds the button to the issue description. Asks Cursor to plan how to implement what the issue asks for.",
+    "targets.issueBody.tooltip": "Plan this issue in Cursor",
+    "targets.issueBody.template": `Take in this GitHub issue and propose a plan for implementing it.
 
 ## What to work on
 ${ISSUE_TARGET_LINES}
@@ -209,11 +215,11 @@ ${CHECK_REPO}
 5. Do not change any code at this stage; stop once you have presented the plan.
 6. Write your answer in English, whatever language the issue is in.`,
 
-    'targets.issueComment.name': 'Issue comments',
-    'targets.issueComment.description':
-      'Adds a button to comments on an issue that checks the comment and proposes how to act on it.',
-    'targets.issueComment.tooltip': 'Check this comment in Cursor',
-    'targets.issueComment.template': `Check the content of a comment on this GitHub issue and propose how to act on it.
+    "targets.issueComment.name": "Issue comments",
+    "targets.issueComment.description":
+      "Adds a button to comments on an issue that checks the comment and proposes how to act on it.",
+    "targets.issueComment.tooltip": "Check this comment in Cursor",
+    "targets.issueComment.template": `Check the content of a comment on this GitHub issue and propose how to act on it.
 
 ## What to work on
 ${ISSUE_TARGET_LINES}
@@ -235,4 +241,4 @@ ${CHECK_REPO}
 5. Do not change any code at this stage; stop once you have presented your findings and proposal.
 6. Write your answer in English, whatever language the comment is in.`,
   };
-})(GHCursorLink);
+})(SendToCursor);

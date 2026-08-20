@@ -2,32 +2,33 @@
  * コメント本文の整形、テンプレート展開、Cursor ディープリンクの組み立て。
  * DOM に依存しない純粋な処理のみを置く（test/harness.html から単体で検証できる）。
  */
-var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
+var SendToCursor = globalThis.SendToCursor || (globalThis.SendToCursor = {});
 
 (function (ns) {
-  const PROTOCOL_BASE = 'cursor://anysphere.cursor-deeplink/prompt';
-  const WEB_BASE = 'https://cursor.com/link/prompt';
+  const PROTOCOL_BASE = "cursor://anysphere.cursor-deeplink/prompt";
+  const WEB_BASE = "https://cursor.com/link/prompt";
 
   /**
    * 画像はプロンプトに入れても情報にならないので落とす。
    * バッジ画像のリンクは href にプロンプトを URL エンコードして持つことがあり、
    * それを本文として再エンコードすると数千文字に膨らんで 8,000 文字制限を圧迫する。
    */
-  const IMAGE_LINK_RE = /<a\b[^>]*>\s*(?:<picture\b[\s\S]*?<\/picture>|<img\b[^>]*\/?>)\s*<\/a>/gi;
+  const IMAGE_LINK_RE =
+    /<a\b[^>]*>\s*(?:<picture\b[\s\S]*?<\/picture>|<img\b[^>]*\/?>)\s*<\/a>/gi;
   const PICTURE_RE = /<picture\b[\s\S]*?<\/picture>/gi;
   const IMG_RE = /<img\b[^>]*\/?>/gi;
 
   ns.cleanCommentBody = function cleanCommentBody(raw) {
-    if (!raw) return '';
+    if (!raw) return "";
     return String(raw)
-      .replace(/\r\n/g, '\n')
-      .replace(IMAGE_LINK_RE, '')
-      .replace(PICTURE_RE, '')
-      .replace(IMG_RE, '')
-      .split('\n')
-      .map((line) => line.replace(/[ \t]+$/, ''))
-      .join('\n')
-      .replace(/\n{3,}/g, '\n\n')
+      .replace(/\r\n/g, "\n")
+      .replace(IMAGE_LINK_RE, "")
+      .replace(PICTURE_RE, "")
+      .replace(IMG_RE, "")
+      .split("\n")
+      .map((line) => line.replace(/[ \t]+$/, ""))
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
       .trim();
   };
 
@@ -45,7 +46,7 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
 
       let end = i + 1;
       while (end < result.length && !HEADING_RE.test(result[end])) {
-        if (result[end].trim() !== '') break;
+        if (result[end].trim() !== "") break;
         end += 1;
       }
       const isEmpty = end === result.length || HEADING_RE.test(result[end]);
@@ -62,31 +63,33 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
   ns.renderTemplate = function renderTemplate(template, values) {
     const placeholder = /\{\{\s*([A-Za-z0-9_]+)\s*\}\}/g;
     const kept = String(template)
-      .split('\n')
+      .split("\n")
       .filter((line) => {
         const names = [...line.matchAll(placeholder)].map((m) => m[1]);
         if (names.length === 0) return true;
         return names.every((name) => {
           const value = values[name];
-          return value !== undefined && value !== null && String(value).trim() !== '';
+          return (
+            value !== undefined && value !== null && String(value).trim() !== ""
+          );
         });
       });
     return dropEmptySections(kept)
-      .join('\n')
+      .join("\n")
       .replace(placeholder, (_match, name) => {
         const value = values[name];
-        return value === undefined || value === null ? '' : String(value);
+        return value === undefined || value === null ? "" : String(value);
       })
-      .replace(/\n{3,}/g, '\n\n');
+      .replace(/\n{3,}/g, "\n\n");
   };
 
   ns.buildDeeplink = function buildDeeplink(prompt, linkMode) {
-    const base = linkMode === 'web' ? WEB_BASE : PROTOCOL_BASE;
+    const base = linkMode === "web" ? WEB_BASE : PROTOCOL_BASE;
     return `${base}?text=${encodeURIComponent(prompt)}`;
   };
 
   function truncationNote() {
-    return `\n\n${ns.t('prompt.truncationNote')}`;
+    return `\n\n${ns.t("prompt.truncationNote")}`;
   }
 
   /**
@@ -100,11 +103,12 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
     template,
     values,
     body,
-    bodyKey = 'commentBody',
+    bodyKey = "commentBody",
     linkMode,
     urlLimit = ns.URL_LIMIT || 8000,
   }) {
-    const render = (bodyText) => ns.renderTemplate(template, { ...values, [bodyKey]: bodyText });
+    const render = (bodyText) =>
+      ns.renderTemplate(template, { ...values, [bodyKey]: bodyText });
     const build = (bodyText) => ns.buildDeeplink(render(bodyText), linkMode);
 
     const full = build(body);
@@ -124,6 +128,10 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
       }
     }
     const truncatedBody = body.slice(0, low) + note;
-    return { url: build(truncatedBody), prompt: render(truncatedBody), truncated: true };
+    return {
+      url: build(truncatedBody),
+      prompt: render(truncatedBody),
+      truncated: true,
+    };
   };
-})(GHCursorLink);
+})(SendToCursor);

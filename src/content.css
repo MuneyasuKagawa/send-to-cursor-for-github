@@ -12,7 +12,8 @@
   height: 26px;
   padding: 0 8px;
   margin: 0 4px;
-  border: 1px solid var(--borderColor-default, var(--color-border-default, #d1d9e0));
+  border: 1px solid
+    var(--borderColor-default, var(--color-border-default, #d1d9e0));
   border-radius: 999px;
   background-color: var(--bgColor-muted, var(--color-canvas-subtle, #f6f8fa));
   color: var(--fgColor-muted, var(--color-fg-muted, #59636e));
@@ -53,8 +54,14 @@ reactions-menu + .ghcl-button {
 }
 
 .ghcl-button:hover {
-  background-color: var(--bgColor-neutral-muted, var(--color-neutral-muted, #818b981f));
-  border-color: var(--borderColor-neutral-emphasis, var(--color-neutral-emphasis, #6e7781));
+  background-color: var(
+    --bgColor-neutral-muted,
+    var(--color-neutral-muted, #818b981f)
+  );
+  border-color: var(
+    --borderColor-neutral-emphasis,
+    var(--color-neutral-emphasis, #6e7781)
+  );
   color: var(--fgColor-default, var(--color-fg-default, #1f2328));
   text-decoration: none;
 }

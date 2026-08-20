@@ -318,7 +318,7 @@
           report.textContent = [
             `fixtures: ${fixtures.join(', ')}`,
             `language: ${language}`,
-            `page context: ${JSON.stringify(GHCursorLink.getPageContext(), null, 2)}`,
+            `page context: ${JSON.stringify(SendToCursor.getPageContext(), null, 2)}`,
             `buttons: ${buttons.length}`,
             ...buttons.map((button, index) => {
               const prompt = promptOf(button);

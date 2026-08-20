@@ -8,11 +8,11 @@
  * 設定ページで言語を選べるようにするため、実行時の文言は src/locales/*.js の自前カタログから引く。
  * ブラウザ側が表示する manifest の description だけは _locales に置いている。
  */
-var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
+var SendToCursor = globalThis.SendToCursor || (globalThis.SendToCursor = {});
 
 (function (ns) {
-  ns.DEFAULT_LANGUAGE = 'ja';
-  ns.LANGUAGES = ['ja', 'en'];
+  ns.DEFAULT_LANGUAGE = "ja";
+  ns.LANGUAGES = ["ja", "en"];
 
   // src/locales/*.js が自分で登録する。読み込み順に依存しないよう、ここでは器だけ用意する。
   ns.MESSAGES = ns.MESSAGES || {};
@@ -31,7 +31,7 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
 
   function lookup(language, key) {
     const messages = ns.MESSAGES[language];
-    return messages && typeof messages[key] === 'string' ? messages[key] : null;
+    return messages && typeof messages[key] === "string" ? messages[key] : null;
   }
 
   /**
@@ -47,4 +47,4 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
       name in params ? String(params[name]) : match,
     );
   };
-})(GHCursorLink);
+})(SendToCursor);

@@ -5,7 +5,7 @@
  * 文中の `{name}` は src/i18n.js が差し込む値、`{{name}}` はプロンプト展開時の
  * プレースホルダー（src/prompt.js が処理する）。
  */
-var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
+var SendToCursor = globalThis.SendToCursor || (globalThis.SendToCursor = {});
 
 (function (ns) {
   /** ブランチを取り違えたまま作業させないための確認手順（ブランチのある対象で共有する） */
@@ -33,84 +33,89 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
   ns.MESSAGES = ns.MESSAGES || {};
   ns.MESSAGES.ja = {
     // --- 設定ページ -------------------------------------------------------
-    'options.title': 'Send to Cursor for GitHub の設定',
-    'options.tab.general': '一般',
-    'options.tab.off': 'オフ',
+    "options.title": "Send to Cursor for GitHub の設定",
+    "options.tab.general": "一般",
+    "options.tab.off": "オフ",
 
-    'options.language.title': '表示言語',
-    'options.language.hint':
-      '設定ページとボタンの表示、プロンプトの既定値に使う言語です。プロンプトは言語ごとに保存されるので、編集した内容は言語を切り替えても残ります。',
+    "options.language.title": "表示言語",
+    "options.language.hint":
+      "設定ページとボタンの表示、プロンプトの既定値に使う言語です。プロンプトは言語ごとに保存されるので、編集した内容は言語を切り替えても残ります。",
 
-    'options.linkMode.title': 'リンクの開き方',
-    'options.linkMode.protocol.title': '`cursor://` で直接開く',
-    'options.linkMode.protocol.hint': 'Cursor アプリを直接起動します。通常はこちら。',
-    'options.linkMode.web.title': '`https://cursor.com/link/` を経由する',
-    'options.linkMode.web.hint':
-      '直接起動が Chrome にブロックされる場合の代替。いったん cursor.com を開いてから Cursor に渡します。',
+    "options.linkMode.title": "リンクの開き方",
+    "options.linkMode.protocol.title": "`cursor://` で直接開く",
+    "options.linkMode.protocol.hint":
+      "Cursor アプリを直接起動します。通常はこちら。",
+    "options.linkMode.web.title": "`https://cursor.com/link/` を経由する",
+    "options.linkMode.web.hint":
+      "直接起動が Chrome にブロックされる場合の代替。いったん cursor.com を開いてから Cursor に渡します。",
 
-    'options.label.title': 'ボタンのラベル',
-    'options.label.show': 'ラベルを表示する',
-    'options.label.hint':
-      'オフにするとアイコンだけのボタンになります。入力済みのラベルはスクリーンリーダー向けの名前として引き続き使われます。',
+    "options.label.title": "ボタンのラベル",
+    "options.label.show": "ラベルを表示する",
+    "options.label.hint":
+      "オフにするとアイコンだけのボタンになります。入力済みのラベルはスクリーンリーダー向けの名前として引き続き使われます。",
 
-    'options.target.enabled': 'この対象にボタンを付ける',
-    'options.target.prompt': 'プロンプト',
-    'options.target.insert': 'クリックでカーソル位置に挿入:',
-    'options.target.promptHint':
-      '値が取得できなかったプレースホルダーを含む行はまるごと削除され、中身が空になった見出しも一緒に削除されます。',
-    'options.target.reset': '既定値に戻す',
+    "options.target.enabled": "この対象にボタンを付ける",
+    "options.target.prompt": "プロンプト",
+    "options.target.insert": "クリックでカーソル位置に挿入:",
+    "options.target.promptHint":
+      "値が取得できなかったプレースホルダーを含む行はまるごと削除され、中身が空になった見出しも一緒に削除されます。",
+    "options.target.reset": "既定値に戻す",
 
-    'options.reset.title': 'プロンプトの初期化',
-    'options.reset.hint':
-      'すべての対象のプロンプトを、表示言語の既定値に戻します。編集した内容は失われます。対象ごとに戻すこともできます。',
-    'options.reset.all': 'すべてのプロンプトを既定値に戻す',
-    'options.status.saved': '保存しました',
-    'options.status.reset': '「{name}」のプロンプトを既定値に戻しました',
-    'options.status.resetAll': 'すべてのプロンプトを既定値に戻しました',
-    'options.status.saveFailed': '保存できませんでした: {error}',
-    'options.status.oversized':
-      '「{name}」のプロンプトが長すぎて保存できません（{bytes} / {limit} バイト）。短くすると保存されます。',
+    "options.reset.title": "プロンプトの初期化",
+    "options.reset.hint":
+      "すべての対象のプロンプトを、表示言語の既定値に戻します。編集した内容は失われます。対象ごとに戻すこともできます。",
+    "options.reset.all": "すべてのプロンプトを既定値に戻す",
+    "options.status.saved": "保存しました",
+    "options.status.reset": "「{name}」のプロンプトを既定値に戻しました",
+    "options.status.resetAll": "すべてのプロンプトを既定値に戻しました",
+    "options.status.saveFailed": "保存できませんでした: {error}",
+    "options.status.oversized":
+      "「{name}」のプロンプトが長すぎて保存できません（{bytes} / {limit} バイト）。短くすると保存されます。",
 
     // --- ボタン -----------------------------------------------------------
-    'button.copied': 'コピーしました',
-    'tooltip.truncated': '{tooltip}（本文が長いため一部省略）',
-    'tooltip.shiftToCopy': 'Shift+クリックでプロンプトをコピー',
-    'prompt.truncationNote': '…(本文が長いため以降を省略しました)',
-    'log.injectFailed': 'ボタンの挿入に失敗しました',
+    "button.copied": "コピーしました",
+    "tooltip.truncated": "{tooltip}（本文が長いため一部省略）",
+    "tooltip.shiftToCopy": "Shift+クリックでプロンプトをコピー",
+    "prompt.truncationNote": "…(本文が長いため以降を省略しました)",
+    "log.injectFailed": "ボタンの挿入に失敗しました",
 
     // --- プレースホルダーの説明（設定ページでホバーしたときに出る） -------
-    'placeholders.repository': 'owner/repo 形式のリポジトリ名',
-    'placeholders.prNumber': 'PR の番号（# は付きません）',
-    'placeholders.prTitle': 'PR のタイトル',
-    'placeholders.prUrl': 'PR のページの URL',
-    'placeholders.prBody':
-      'PR の説明文（Markdown 原文）。Conversation タブ以外では取得できず空になります',
-    'placeholders.headBranch': '作業ブランチ名 (head)',
-    'placeholders.headLabel':
-      'fork からの PR のときだけ owner:branch 形式で入ります。同じリポジトリ内の PR では空',
-    'placeholders.baseBranch': 'マージ先のブランチ名 (base)',
-    'placeholders.author':
-      'コメントの投稿者。「PR 全体」では PR の作成者、「Issue の本文」では Issue の作成者',
-    'placeholders.commentUrl': 'そのコメントへのリンク（アンカー付き）',
-    'placeholders.commentBody': 'コメント本文（Markdown 原文）。画像は除去され、長い場合は末尾が省略されます',
-    'placeholders.filePath': 'コメントが付いた差分のファイルパス。会話コメントでは空',
-    'placeholders.lines': 'コメントが付いた行番号。複数行のときは 12-18 の形式',
-    'placeholders.checkName': '失敗したチェックの名前',
-    'placeholders.checkUrl': 'そのチェックの詳細ページの URL',
-    'placeholders.failureOutput':
-      'ページから読み取れた失敗の内容（状態テキストと、単一のチェックを開いているときは annotation）。ログ全文は含まれません',
-    'placeholders.issueNumber': 'Issue の番号（# は付きません）',
-    'placeholders.issueTitle': 'Issue のタイトル',
-    'placeholders.issueUrl': 'Issue のページの URL',
-    'placeholders.issueLabels': 'Issue に付いているラベル名のカンマ区切り。ラベルが無ければ空',
-    'placeholders.issueBody': 'Issue の本文（Markdown 原文）。画像は除去され、長い場合は末尾が省略されます',
+    "placeholders.repository": "owner/repo 形式のリポジトリ名",
+    "placeholders.prNumber": "PR の番号（# は付きません）",
+    "placeholders.prTitle": "PR のタイトル",
+    "placeholders.prUrl": "PR のページの URL",
+    "placeholders.prBody":
+      "PR の説明文（Markdown 原文）。Conversation タブ以外では取得できず空になります",
+    "placeholders.headBranch": "作業ブランチ名 (head)",
+    "placeholders.headLabel":
+      "fork からの PR のときだけ owner:branch 形式で入ります。同じリポジトリ内の PR では空",
+    "placeholders.baseBranch": "マージ先のブランチ名 (base)",
+    "placeholders.author":
+      "コメントの投稿者。「PR 全体」では PR の作成者、「Issue の本文」では Issue の作成者",
+    "placeholders.commentUrl": "そのコメントへのリンク（アンカー付き）",
+    "placeholders.commentBody":
+      "コメント本文（Markdown 原文）。画像は除去され、長い場合は末尾が省略されます",
+    "placeholders.filePath":
+      "コメントが付いた差分のファイルパス。会話コメントでは空",
+    "placeholders.lines": "コメントが付いた行番号。複数行のときは 12-18 の形式",
+    "placeholders.checkName": "失敗したチェックの名前",
+    "placeholders.checkUrl": "そのチェックの詳細ページの URL",
+    "placeholders.failureOutput":
+      "ページから読み取れた失敗の内容（状態テキストと、単一のチェックを開いているときは annotation）。ログ全文は含まれません",
+    "placeholders.issueNumber": "Issue の番号（# は付きません）",
+    "placeholders.issueTitle": "Issue のタイトル",
+    "placeholders.issueUrl": "Issue のページの URL",
+    "placeholders.issueLabels":
+      "Issue に付いているラベル名のカンマ区切り。ラベルが無ければ空",
+    "placeholders.issueBody":
+      "Issue の本文（Markdown 原文）。画像は除去され、長い場合は末尾が省略されます",
 
     // --- 対象 -------------------------------------------------------------
-    'targets.prReview.name': 'PR 全体',
-    'targets.prReview.description':
-      'PR ヘッダーと PR 説明文にボタンを付けます。PR の変更差分全体をレビューさせます。',
-    'targets.prReview.tooltip': 'Cursor でこの PR をレビューする',
-    'targets.prReview.template': `GitHub のプルリクエストの変更内容をレビューしてください。
+    "targets.prReview.name": "PR 全体",
+    "targets.prReview.description":
+      "PR ヘッダーと PR 説明文にボタンを付けます。PR の変更差分全体をレビューさせます。",
+    "targets.prReview.tooltip": "Cursor でこの PR をレビューする",
+    "targets.prReview.template": `GitHub のプルリクエストの変更内容をレビューしてください。
 
 ## 作業対象
 ${PR_TARGET_LINES}
@@ -130,11 +135,11 @@ ${CHECK_REPO_AND_BRANCH}
 6. この段階ではコードを変更せず、レビュー結果の提示までにとどめてください。
 7. 回答は日本語で記述してください。`,
 
-    'targets.prComment.name': 'PR のコメント',
-    'targets.prComment.description':
-      'PR のレビューコメントと会話コメントに、内容を検証して対応方針を出させるボタンを付けます。',
-    'targets.prComment.tooltip': 'Cursor でこのコメントを検証する',
-    'targets.prComment.template': `GitHub のプルリクエストに付いたコメントの内容を検証し、対応方針を提示してください。
+    "targets.prComment.name": "PR のコメント",
+    "targets.prComment.description":
+      "PR のレビューコメントと会話コメントに、内容を検証して対応方針を出させるボタンを付けます。",
+    "targets.prComment.tooltip": "Cursor でこのコメントを検証する",
+    "targets.prComment.template": `GitHub のプルリクエストに付いたコメントの内容を検証し、対応方針を提示してください。
 
 ## 作業対象
 ${PR_TARGET_LINES}
@@ -158,11 +163,11 @@ ${CHECK_REPO_AND_BRANCH}
 5. この段階ではコードを変更せず、検証結果と対応案の提示までにとどめてください。
 6. コメント本文が何語であっても、回答は日本語で記述してください。`,
 
-    'targets.ciFailure.name': '失敗した CI チェック',
-    'targets.ciFailure.description':
-      'PR のチェック一覧で失敗しているチェックの行にボタンを付けます。ログ全文はページから読み取れないため、原因の調査から依頼する形になります。',
-    'targets.ciFailure.tooltip': 'Cursor でこの CI 失敗を調査する',
-    'targets.ciFailure.template': `GitHub の CI チェックが失敗した原因を調査してください。
+    "targets.ciFailure.name": "失敗した CI チェック",
+    "targets.ciFailure.description":
+      "PR のチェック一覧で失敗しているチェックの行にボタンを付けます。ログ全文はページから読み取れないため、原因の調査から依頼する形になります。",
+    "targets.ciFailure.tooltip": "Cursor でこの CI 失敗を調査する",
+    "targets.ciFailure.template": `GitHub の CI チェックが失敗した原因を調査してください。
 
 ## 作業対象
 ${PR_TARGET_LINES}
@@ -185,11 +190,11 @@ ${CHECK_REPO_AND_BRANCH}
 6. この段階ではコードを変更せず、原因と修正案の提示までにとどめてください。
 7. 回答は日本語で記述してください。`,
 
-    'targets.issueBody.name': 'Issue の本文',
-    'targets.issueBody.description':
-      'Issue の説明文にボタンを付けます。Issue の要求を実装する方針を立てさせます。',
-    'targets.issueBody.tooltip': 'Cursor でこの Issue の実装方針を立てる',
-    'targets.issueBody.template': `GitHub の Issue の内容を把握し、実装方針を提示してください。
+    "targets.issueBody.name": "Issue の本文",
+    "targets.issueBody.description":
+      "Issue の説明文にボタンを付けます。Issue の要求を実装する方針を立てさせます。",
+    "targets.issueBody.tooltip": "Cursor でこの Issue の実装方針を立てる",
+    "targets.issueBody.template": `GitHub の Issue の内容を把握し、実装方針を提示してください。
 
 ## 作業対象
 ${ISSUE_TARGET_LINES}
@@ -209,11 +214,11 @@ ${CHECK_REPO}
 5. この段階ではコードを変更せず、方針の提示までにとどめてください。
 6. Issue 本文が何語であっても、回答は日本語で記述してください。`,
 
-    'targets.issueComment.name': 'Issue のコメント',
-    'targets.issueComment.description':
-      'Issue に付いたコメントに、内容を検証して対応方針を出させるボタンを付けます。',
-    'targets.issueComment.tooltip': 'Cursor でこのコメントを検証する',
-    'targets.issueComment.template': `GitHub の Issue に付いたコメントの内容を検証し、対応方針を提示してください。
+    "targets.issueComment.name": "Issue のコメント",
+    "targets.issueComment.description":
+      "Issue に付いたコメントに、内容を検証して対応方針を出させるボタンを付けます。",
+    "targets.issueComment.tooltip": "Cursor でこのコメントを検証する",
+    "targets.issueComment.template": `GitHub の Issue に付いたコメントの内容を検証し、対応方針を提示してください。
 
 ## 作業対象
 ${ISSUE_TARGET_LINES}
@@ -235,4 +240,4 @@ ${CHECK_REPO}
 5. この段階ではコードを変更せず、検証結果と対応案の提示までにとどめてください。
 6. コメント本文が何語であっても、回答は日本語で記述してください。`,
   };
-})(GHCursorLink);
+})(SendToCursor);
