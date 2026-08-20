@@ -22,10 +22,10 @@ GitHub のプルリクエストのコメントに、そのコメントを検証�
 2. 右上の「デベロッパーモード」をオンにする
 3. 「パッケージ化されていない拡張機能を読み込む」でこのディレクトリを選ぶ
 
-アイコンは `tools/make_icons.py` で生成しています。生成済みなので通常は実行不要です。
+アイコンの PNG は `icons/icon.svg` から生成してコミット済みなので、通常は生成不要です。デザインを変えたときだけ以下を実行します（`brew install librsvg` が必要）。
 
 ```bash
-python3 tools/make_icons.py
+for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$s.png; done
 ```
 
 ## 設定
@@ -35,7 +35,7 @@ python3 tools/make_icons.py
 | 項目 | 既定値 | 説明 |
 | --- | --- | --- |
 | リンクの開き方 | `cursor://` 直接 | Chrome に直接起動をブロックされる場合は `https://cursor.com/link/` 経由に切り替えます |
-| ボタンのラベル | `Cursor` | |
+| ボタンのラベル | `Cursor` | 「ラベルを表示する」をオフにすると、アイコンのみの丸いボタンになります（ラベルの文字列はツールチップと読み上げ用の名前として残ります） |
 | プロンプトのテンプレート | `src/config.js` の既定値 | 下記プレースホルダーが使えます |
 
 ### テンプレートのプレースホルダー
@@ -65,6 +65,12 @@ GitHub の DOM は現行の Rails 製と新しい React 製が混在している
 ### 縦位置の揃え方
 
 リアクション行は `align-items: stretch` ですが、高さが確定している要素は `flex-start` 扱いになります。絵文字リアクションボタンとリアクションピルはどちらも 26px なので、ボタンも `height: 26px` にするだけで揃います。`align-self` は指定しません。リアクションが折り返して行が高くなったときに `center` を指定していると、上端揃えのままの絵文字ボタンとズレるためです。
+
+### アイコン
+
+`icons/icon.svg` がソースで、PNG はここからラスタライズしたものです。Chrome の拡張機能アイコンは SVG を受け付けず、Blink が扱えるラスタ形式に限られるため（[Manifest - Icons | Chrome Extensions](https://developer.chrome.com/docs/extensions/reference/manifest/icons): "They can, however, be in any raster format supported by Blink, including BMP, GIF, ICO, and JPEG." = 「ただし、BMP、GIF、ICO、JPEG を含む、Blink がサポートする任意のラスタ形式にすることもできます」）、生成した PNG をコミットしています。
+
+図形はボタンのアイコン（`src/content.js` の `ICON_PATH`）と同じターミナルのプロンプト記号ですが、シェブロンの太さだけが違います。SVG 側は 2.5、`content.js` 側は 2.1 です。16px の PNG では 45 度の対角線がアンチエイリアスで 2px に散ってコントラストを失うため、ラスタ側だけ太らせています。ボタンは 12px 表示の SVG なので、同じ調整をしても 0.26px 相当の差にしかならず、そのままにしています。
 
 ### URL 長
 
@@ -98,7 +104,7 @@ src/extract.js         GitHub の DOM から PR / コメント情報を抽出
 src/content.js         ボタンの生成と挿入、DOM 監視
 src/content.css        ボタンのスタイル
 src/options.*          設定ページ
-tools/make_icons.py    アイコン PNG の生成
+icons/icon.svg         アイコンのソース（PNG はここから生成）
 tools/serve_test.py    動作確認用のローカルサーバー
 test/harness.html      フィクスチャを使ったロジック確認ページ
 test/fixtures/         GitHub の DOM を再現したフィクスチャ
