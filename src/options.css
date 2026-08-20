@@ -20,7 +20,7 @@ main {
 
 h1 {
   font-size: 20px;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
 }
 
 h2 {
@@ -28,8 +28,10 @@ h2 {
   margin: 0 0 8px;
 }
 
-section {
-  margin-bottom: 28px;
+h3 {
+  font-size: 13px;
+  margin: 24px 0 8px;
+  opacity: 0.85;
 }
 
 .hint {
@@ -46,8 +48,61 @@ code {
   background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
+/* タブは 6 枚あって言語によって幅も変わるので、下線ではなく折り返せるピル型にする */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+button.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-color: transparent;
+  border-radius: 999px;
+}
+
+button.tab:hover {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+button.tab[aria-selected='true'] {
+  border-color: var(--border);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  font-weight: 600;
+}
+
+button.tab--off {
+  opacity: 0.7;
+}
+
+.tab-off {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.panel > *:first-child {
+  margin-top: 0;
+}
+
+.field {
+  margin-bottom: 28px;
+}
+
+.field:last-child {
+  margin-bottom: 0;
+}
+
 label.radio,
-label.checkbox {
+label.toggle {
   display: flex;
   gap: 10px;
   align-items: flex-start;
@@ -55,52 +110,113 @@ label.checkbox {
   cursor: pointer;
 }
 
-label.radio input,
-label.checkbox input {
+label.radio input {
   margin-top: 4px;
 }
 
 label.radio span,
-label.checkbox span {
+label.toggle span {
   display: block;
 }
 
 label.radio strong,
-label.checkbox strong {
+label.toggle strong {
   display: block;
   font-weight: 600;
 }
 
 label.radio small,
-label.checkbox small {
+label.toggle small {
   display: block;
   opacity: 0.75;
 }
 
-section.target {
-  margin: 0 0 8px;
-  padding: 12px 14px;
+/*
+ * 見た目だけトグルスイッチにする。実体はチェックボックスのままなので、
+ * ラベルのクリックでも Space キーでも切り替わる。
+ * 幅 34px / 枠 1px なので、つまみ (14px) の移動量は 34 - 2 - 14 - 2 = 14px。
+ */
+label.toggle input[type='checkbox'] {
+  appearance: none;
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 34px;
+  height: 20px;
+  margin: 1px 0 0;
   border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-section.target label.checkbox {
-  padding: 0;
-}
-
-section.target details {
-  margin-top: 10px;
-}
-
-section.target summary {
-  padding: 4px 0;
-  font-size: 12px;
-  opacity: 0.85;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 14%, transparent);
   cursor: pointer;
+  transition: background-color 120ms ease;
 }
 
-section.target details .hint {
-  margin-top: 8px;
+label.toggle input[type='checkbox']::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  /* つまみはオン/オフどちらの地色でも見えるように白で固定する */
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  transition: translate 120ms ease;
+}
+
+label.toggle input[type='checkbox']:checked {
+  border-color: transparent;
+  background: light-dark(#0969da, #3f7fd4);
+}
+
+label.toggle input[type='checkbox']:checked::after {
+  translate: 14px 0;
+}
+
+label.toggle input[type='checkbox']:focus-visible {
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  label.toggle input[type='checkbox'],
+  label.toggle input[type='checkbox']::after {
+    transition: none;
+  }
+}
+
+/*
+ * オフにした対象のプロンプト欄をたたむ。
+ * 行を 1fr → 0fr にすると、中身の高さ（textarea の行数で変わる）を数えずに閉じられる。
+ * visibility も切り替えて、たたんだ欄に Tab キーで入らないようにする。visibility は
+ * 閉じ切るまで visible のまま補間されるので、消えるのはアニメーションの後になる。
+ */
+.collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 180ms ease,
+    opacity 180ms ease,
+    visibility 180ms;
+}
+
+/* 高さを切り取る側。左右は 3px 逃がして、textarea のフォーカスリングが欠けないようにする */
+.collapse > div {
+  overflow: hidden;
+  padding: 0 3px;
+  margin: 0 -3px;
+}
+
+.collapse[data-collapsed] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse {
+    transition: none;
+  }
 }
 
 /* クリックで挿入するボタンだが、意味はコード片なので見た目は code に寄せる */
@@ -120,13 +236,9 @@ button.placeholder:hover {
   background: color-mix(in srgb, currentColor 20%, transparent);
 }
 
-section.target textarea {
-  margin-bottom: 8px;
-}
-
 textarea,
-input[type='text'] {
-  width: 100%;
+input[type='text'],
+select {
   box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid var(--border);
@@ -137,31 +249,20 @@ input[type='text'] {
   font-family: inherit;
 }
 
+textarea,
+input[type='text'] {
+  width: 100%;
+}
+
+select {
+  padding: 7px 10px;
+}
+
 textarea {
+  margin-bottom: 12px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   line-height: 1.5;
   resize: vertical;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: sticky;
-  bottom: 0;
-  padding: 16px 0;
-  background: Canvas;
-  border-top: 1px solid var(--border);
-}
-
-/* 長いエラー文が入っても、ボタンと注記は縮めずに折り返しはエラー側で受ける */
-.actions button,
-.actions .hint {
-  flex: none;
-}
-
-.actions .hint {
-  margin: 0;
 }
 
 button {
@@ -175,12 +276,56 @@ button {
   cursor: pointer;
 }
 
+/* 取り消せない操作なので、押す前に色でも分かるようにする */
+button.danger {
+  color: light-dark(#cf222e, #ff8182);
+}
+
+button.danger:hover {
+  border-color: currentColor;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/*
+ * 保存の結果は右下に浮かせる。常設のバーにすると、何も出ていない時間のほうが
+ * 長いのに場所を取り続けるため。文字を空にすれば :empty で消える。
+ */
 #status {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  box-sizing: border-box;
+  max-width: min(390px, calc(100vw - 48px));
+  margin: 0;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  /* 2 行になるエラー文でも収まるよう、丸みは控えめにする */
+  border-radius: 10px;
+  background: Canvas;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
   font-size: 12px;
-  opacity: 0.8;
+  animation: status-in 160ms ease;
+}
+
+/* display が none から戻るたびに再生されるので、メッセージごとに動く */
+#status:empty {
+  display: none;
 }
 
 #status.error {
   color: light-dark(#cf222e, #ff8182);
-  opacity: 1;
+  border-color: currentColor;
+}
+
+@keyframes status-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #status {
+    animation: none;
+  }
 }

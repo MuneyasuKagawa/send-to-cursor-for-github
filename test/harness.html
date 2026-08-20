@@ -58,6 +58,7 @@
     <div class="harness-note">
       拡張機能のロジック検証用ページ。URL が <code>/pull/</code> か <code>/issues/</code> かで
       読み込むフィクスチャを切り替え、content script と同じ処理を実行する。
+      <code>?lang=en</code> で英語表示になる。
     </div>
 
     <!-- PR ページのヘッダー相当（タイトル / ブランチ / 「PR 全体」ボタンの挿入先） -->
@@ -182,12 +183,15 @@
     <script>
       // content script が使う chrome.storage の最小限のスタブ。
       // ?off=prComment,ciFailure のように渡すと、対象を無効にした状態を再現できる。
-      const disabled = new URLSearchParams(location.search).get('off') || '';
+      // ?lang=en で英語の文言とプロンプトに切り替わる。
+      const params = new URLSearchParams(location.search);
+      const disabled = params.get('off') || '';
       const enabledTargets = {};
       for (const id of disabled.split(',').filter(Boolean)) enabledTargets[id] = false;
+      const language = params.get('lang') || 'ja';
       window.chrome = {
         storage: {
-          sync: { get: async () => ({ enabledTargets }) },
+          sync: { get: async () => ({ enabledTargets, language }) },
           onChanged: { addListener() {} },
         },
       };
@@ -282,6 +286,9 @@
           stubDeferredReactions();
 
           for (const src of [
+            '/src/i18n.js',
+            '/src/locales/ja.js',
+            '/src/locales/en.js',
             '/src/config.js',
             '/src/prompt.js',
             '/src/extract.js',
@@ -310,6 +317,7 @@
 
           report.textContent = [
             `fixtures: ${fixtures.join(', ')}`,
+            `language: ${language}`,
             `page context: ${JSON.stringify(GHCursorLink.getPageContext(), null, 2)}`,
             `buttons: ${buttons.length}`,
             ...buttons.map((button, index) => {

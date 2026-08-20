@@ -1,22 +1,26 @@
-# GitHub Cursor Link
+# Send to Cursor for GitHub
+
+日本語 | [English](README.en.md)
 
 GitHub の PR と Issue に、その内容を渡すプロンプト付きで Cursor の新しいチャットを開くボタンを追加する Chrome 拡張です。
 
 中継サーバーを経由せず、`cursor://anysphere.cursor-deeplink/prompt?text=...` を直接開きます。
 
+表示は日本語と英語に対応していて、既定は日本語です。設定ページで切り替えると、ボタンの文言だけでなくプロンプトの既定値も切り替わります。
+
 ## できること
 
-ボタンを付ける対象は 5 種類あり、対象ごとに有効/無効とプロンプトのテンプレートを設定できます。
+ボタンを付ける対象は 5 種類あり、対象ごとに有効/無効とプロンプトのテンプレートを設定できます（対象名は日本語表示のもの）。
 
-| 対象 | ボタンの位置 | プロンプトの内容 |
-| --- | --- | --- |
-| PR のコメント | リアクション行の末尾 | コメントの内容を検証し、対応方針を提示させる |
-| PR 全体 | PR ヘッダーのボタン列と、PR 説明文のリアクション行の末尾 | base と head の差分をレビューさせる |
-| 失敗した CI チェック | チェック一覧の行の右端 | 失敗の原因を調査させる |
-| Issue の本文 | リアクション行の末尾 | 実装方針を立てさせる |
-| Issue のコメント | リアクション行の末尾 | コメントの内容を検証し、対応方針を提示させる |
+| 対象                 | ボタンの位置                                             | プロンプトの内容                             |
+| -------------------- | -------------------------------------------------------- | -------------------------------------------- |
+| PR 全体              | PR ヘッダーのボタン列と、PR 説明文のリアクション行の末尾 | base と head の差分をレビューさせる          |
+| PR のコメント        | リアクション行の末尾                                     | コメントの内容を検証し、対応方針を提示させる |
+| 失敗した CI チェック | チェック一覧の行の右端                                   | 失敗の原因を調査させる                       |
+| Issue の本文         | リアクション行の末尾                                     | 実装方針を立てさせる                         |
+| Issue のコメント     | リアクション行の末尾                                     | コメントの内容を検証し、対応方針を提示させる |
 
-どのプロンプトにも、リポジトリと（PR なら）head / base ブランチを載せ、着手前に一致を確認するよう指示しています。別ブランチで作業してしまうのを防ぐためです。回答は日本語に固定しています。
+どのプロンプトにも、リポジトリと（PR なら）head / base ブランチを載せ、着手前に一致を確認するよう指示しています。別ブランチで作業してしまうのを防ぐためです。回答は表示言語（日本語か英語）に固定しています。
 
 コメントや説明文の本文は Markdown 原文をそのまま渡します。Shift + クリックすると、開く代わりにプロンプトをクリップボードへコピーします。
 
@@ -36,26 +40,33 @@ for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$
 
 ## 設定
 
-ツールバーの拡張機能アイコン（ピン留めしていない場合はパズルピースのメニュー内にある拡張機能名）をクリックすると設定ページが開き、以下を変更できます。`chrome://extensions` の拡張機能詳細にある「拡張機能のオプション」からも開けます。
+インストールした直後に設定ページが自動で開きます。あとから開くときは、ツールバーの拡張機能アイコン（ピン留めしていない場合はパズルピースのメニュー内にある拡張機能名）をクリックします。`chrome://extensions` の拡張機能詳細にある「拡張機能のオプション」からも開けます。
 
-| 項目 | 既定値 | 説明 |
-| --- | --- | --- |
-| リンクの開き方 | `cursor://` 直接 | Chrome に直接起動をブロックされる場合は `https://cursor.com/link/` 経由に切り替えます |
-| ボタンのラベル | `Cursor` | 「ラベルを表示する」をオフにすると、アイコンのみの丸いボタンになります（ラベルの文字列はツールチップと読み上げ用の名前として残ります） |
-| ボタンを付ける対象 | 5 種類すべて有効 | 対象ごとにボタンを出すかどうかを切り替えます |
-| プロンプトのテンプレート | `src/config.js` の `TARGETS` の既定値 | 対象ごとに編集できます |
+設定ページは「一般」＋対象ごとの 5 枚のタブに分かれています。対象のタブには、オフにしている対象だけ「オフ」のバッジが付きます。開いていたタブは URL のハッシュ（`#prComment` など）に残るので、再読み込みしても同じタブに戻ります。
+
+対象をオフにすると、その対象のプロンプト欄はたたまれます。効かない設定を触れるままにしておくと、オンにし忘れたことに気づけないためです。たたむときは行を `1fr` から `0fr` へ変える grid のアニメーションを使い、中身の高さを数えずに閉じています。あわせて `visibility` も切り替えて、たたんだ欄に Tab キーで入らないようにしています。
+
+オン/オフはトグルスイッチですが、実体は `input[type="checkbox"]` を CSS で見た目だけ変えたものです（ラベルのクリックや Space キーでの切り替えをそのまま使うため）。あわせて `role="switch"` を付け、読み上げも「チェックボックス」ではなく「スイッチ」に揃えています。どちらのアニメーションも `prefers-reduced-motion: reduce` のときは止めます。
+
+| タブ     | 項目                     | 既定値                                             | 説明                                                                                                                                   |
+| -------- | ------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 一般     | 表示言語                 | 日本語                                             | 日本語か英語。設定ページとボタンの文言、プロンプトの既定値に使います                                                                   |
+| 一般     | リンクの開き方           | `cursor://` 直接                                   | Chrome に直接起動をブロックされる場合は `https://cursor.com/link/` 経由に切り替えます                                                  |
+| 一般     | ボタンのラベル           | `Cursor`                                           | 「ラベルを表示する」をオフにすると、アイコンのみの丸いボタンになります（ラベルの文字列はツールチップと読み上げ用の名前として残ります） |
+| 対象ごと | ボタンを付けるかどうか   | 5 種類すべて有効                                   | 対象ごとにボタンを出すかどうかを切り替えます                                                                                           |
+| 対象ごと | プロンプトのテンプレート | `src/locales/<言語>.js` の `targets.<id>.template` | 対象ごと・言語ごとに編集できます                                                                                                       |
 
 ### テンプレートのプレースホルダー
 
-使えるプレースホルダーは対象ごとに違います（設定ページの各対象にも表示されます）。
+使えるプレースホルダーは対象ごとに違います（設定ページの対象ごとのタブにも表示され、クリックでカーソル位置に挿入できます）。
 
-| 対象 | プレースホルダー |
-| --- | --- |
-| PR のコメント | `{{repository}}` `{{prNumber}}` `{{prTitle}}` `{{prUrl}}` `{{headBranch}}` `{{headLabel}}` `{{baseBranch}}` `{{commentUrl}}` `{{author}}` `{{filePath}}` `{{lines}}` `{{commentBody}}` |
-| PR 全体 | PR の共通項目 + `{{author}}` `{{prBody}}` |
-| 失敗した CI チェック | PR の共通項目 + `{{checkName}}` `{{checkUrl}}` `{{failureOutput}}` |
-| Issue の本文 | `{{repository}}` `{{issueNumber}}` `{{issueTitle}}` `{{issueUrl}}` `{{issueLabels}}` `{{author}}` `{{issueBody}}` |
-| Issue のコメント | `{{repository}}` `{{issueNumber}}` `{{issueTitle}}` `{{issueUrl}}` `{{commentUrl}}` `{{author}}` `{{commentBody}}` |
+| 対象                 | プレースホルダー                                                                                                                                                                       |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PR 全体              | PR の共通項目 + `{{author}}` `{{prBody}}`                                                                                                                                              |
+| PR のコメント        | `{{repository}}` `{{prNumber}}` `{{prTitle}}` `{{prUrl}}` `{{headBranch}}` `{{headLabel}}` `{{baseBranch}}` `{{commentUrl}}` `{{author}}` `{{filePath}}` `{{lines}}` `{{commentBody}}` |
+| 失敗した CI チェック | PR の共通項目 + `{{checkName}}` `{{checkUrl}}` `{{failureOutput}}`                                                                                                                     |
+| Issue の本文         | `{{repository}}` `{{issueNumber}}` `{{issueTitle}}` `{{issueUrl}}` `{{issueLabels}}` `{{author}}` `{{issueBody}}`                                                                      |
+| Issue のコメント     | `{{repository}}` `{{issueNumber}}` `{{issueTitle}}` `{{issueUrl}}` `{{commentUrl}}` `{{author}}` `{{commentBody}}`                                                                     |
 
 値が取得できなかったプレースホルダーを含む行は、まるごと出力から削除されます。「対象ファイル:」のような見出しだけが残ることはありません。
 
@@ -65,13 +76,27 @@ for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$
 
 ### 対象の定義
 
-ボタンを付ける対象は `src/config.js` の `TARGETS` に 1 件ずつ定義しています。既定の有効/無効、プロンプトのテンプレート、設定ページのセクションはすべてここから導出されるので、対象を増やすときは `TARGETS` への追記と、`src/extract.js` / `src/content.js` への抽出処理の追加だけで済みます。
+ボタンを付ける対象は `src/config.js` の `TARGETS` に 1 件ずつ定義しています。既定の有効/無効、設定ページのタブとパネルはすべてここから導出されるので、対象を増やすときは `TARGETS` への追記、`src/locales/*.js` への文言（名前・説明・ツールチップ・プロンプト）の追加、`src/extract.js` / `src/content.js` への抽出処理の追加で済みます。`TARGETS` には言語に依らない構造（id、本文のプレースホルダー名、使えるプレースホルダー）だけを置いています。
+
+### 表示言語の切り替え
+
+`chrome.i18n`（`_locales`）はブラウザの UI 言語で決まり、拡張の設定から切り替えられません（[chrome.i18n | Chrome for Developers](https://developer.chrome.com/docs/extensions/reference/api/i18n): "Search the messages file (if any) for the user's preferred locale." = 「ユーザーの優先ロケールのメッセージファイル（あれば）を検索します」）。設定ページで言語を選べるようにしたいので、実行時の文言は `src/locales/ja.js` / `src/locales/en.js` の自前カタログから引き、選んだ言語を `chrome.storage.sync` に持ちます。
+
+`_locales` を使うのは、ブラウザ側が表示する `manifest.json` の `description` だけです。こちらは拡張の設定を読めないのでブラウザの言語に従い、`default_locale` を `ja` にしています。
+
+プロンプトは対象ごと・**言語ごと**に `template_<言語>_<対象 id>` のキーで保存します。言語を切り替えると既定値が切り替わるので、キーを共有すると片方の言語で編集した内容が意図せず引き継がれたり、既定値に戻したときに前の言語の文が残ったりします。分けておけば、日本語で編集した内容は英語に切り替えても失われず、戻せば元のまま出てきます。
+
+言語を切り替えるときは、まず**切り替え前の言語のキー**で今の入力内容を保存し、そのあとに言語を書き換えて読み直します（順序を逆にすると、日本語のプロンプトが英語のキーに書き込まれます）。言語を分ける前の `template_<対象 id>` や、さらに前の `templates` / `promptTemplate` はどれも日本語なので、日本語を表示しているときだけ読んで `template_ja_<対象 id>` に移し、移せたことを確認してから古いキーを消します。
+
+### インストール直後に設定ページを開く
+
+初回インストールだけ設定ページを開きます。パッケージ化されていない拡張機能の再読み込みは `"update"` 扱いなので、開発中に毎回開くことはありません（[chrome.runtime | Chrome for Developers](https://developer.chrome.com/docs/extensions/reference/api/runtime): "When an unpacked extension is reloaded, this is treated as an update. This means that the `chrome.runtime.onInstalled` event will fire with the `"update"` reason." = 「パッケージ化されていない拡張機能を再読み込みすると、これは更新として扱われます。つまり `chrome.runtime.onInstalled` イベントは `"update"` の理由で発火します」）。
 
 ### ブランチ名の取り出し方
 
 旧 UI では `.head-ref` / `.base-ref`、それが無ければ `.base-ref` を含むかどうかで `.commit-ref` を head と base に振り分けます。
 
-新しい PR UI にはこれらのクラスが無く、ブランチは `[data-component="BranchName"]` のリンクになります。ヘッダーの説明部（`[data-component="PageHeader.Description"]`）は「〜 wants to merge N commits into <base> from <head>」の順に並ぶので、この範囲に絞って DOM 順の 1 件目を base、2 件目を head として扱います。
+新しい PR UI にはこれらのクラスが無く、ブランチは `[data-component="BranchName"]` のリンクになります。ヘッダーの説明部（`[data-component="PageHeader.Description"]`）は「〜 wants to merge N commits into `<base>` from `<head>`」の順に並ぶので、この範囲に絞って DOM 順の 1 件目を base、2 件目を head として扱います。
 
 ブランチ名はリンクのテキストではなく `href` の `/owner/repo/tree/<ブランチ名>` から取ります。テキストは fork のとき `owner:branch` 形式になるうえ、`feature/foo` のようにスラッシュを含む名前でも `href` なら正確に取れるためです。
 
@@ -123,13 +148,13 @@ PR と Issue の説明文は、タイムラインの中で唯一 id が `issue-<
 
 Issue ページは PR より先に React 化が進んでいて、`.js-comment` や `reactions-menu`、`.js-comment-body` といった Rails 版のクラスがひとつも残っていません。そのためコメントの起点、本文のテキスト、投稿者、permalink をすべて `data-testid` から取ります。
 
-| 項目 | 取得先 |
-| --- | --- |
-| 本文の起点 | `[data-testid="issue-body"]` |
-| コメントの起点 | `[data-testid^="comment-viewer-outer-box-"]` |
-| 本文のテキスト | `[data-testid="markdown-body"]` |
-| 本文の投稿者 / permalink | `[data-testid="issue-body-header-author"]` / `[data-testid="issue-body-header-link"]` |
-| コメントの投稿者 / permalink | `[data-testid="avatar-link"]` / `a[href*="#issuecomment-"]`（旧 UI と同じ） |
+| 項目                         | 取得先                                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| 本文の起点                   | `[data-testid="issue-body"]`                                                          |
+| コメントの起点               | `[data-testid^="comment-viewer-outer-box-"]`                                          |
+| 本文のテキスト               | `[data-testid="markdown-body"]`                                                       |
+| 本文の投稿者 / permalink     | `[data-testid="issue-body-header-author"]` / `[data-testid="issue-body-header-link"]` |
+| コメントの投稿者 / permalink | `[data-testid="avatar-link"]` / `a[href*="#issuecomment-"]`（旧 UI と同じ）           |
 
 ラベルは `[data-testid="issue-labels"]` から取れますが、各リンクが説明文を `.sr-only` で内包しているため、そのまま `textContent` を読むとラベル名に説明文が続いてしまいます。読み上げ専用の要素を除いてから読んでいます。
 
@@ -183,7 +208,9 @@ PR の `?ui=new` では、遅延読み込みの「...」メニューもスタブ
 
 各ボタンには挿入先の行と、その行に並んでいる要素が表示されるので、絵文字リアクションとの前後関係もそこで確認できます。
 
-`?off=prComment,ciFailure` のようにクエリを付けると、その対象を無効にした状態を再現できます。
+`?off=prComment,ciFailure` のようにクエリを付けると、その対象を無効にした状態を再現できます。`?lang=en` を付けると英語表示（英語のプロンプト）になります。
+
+設定ページ自体は `chrome.storage` が必要なので、`chrome://extensions` から読み込んで確認します。
 
 ## 既知の制約
 
@@ -192,19 +219,23 @@ PR の `?ui=new` では、遅延読み込みの「...」メニューもスタブ
 - 新しい Issue UI で Markdown 原文の取得元にしている埋め込みデータは初回読み込み時のスナップショットです。ページネーションで後から読み込まれたコメントや、投稿直後のコメントでは原文が取れず、描画済み HTML のテキストで代用します。
 - 「失敗した CI チェック」のうち、**失敗した行そのもの**の見た目はフィクスチャ上でしか確認できていません。実機で確認できたのは Skipped / Successful の行だけで、失敗行のアイコンや状態テキストの実際の文言（`Failing after 2m` としています）は未確認です。想定と違う場合はボタンが出ませんが、他の対象には影響しません。
 - Discussions、コミットのコメント、コード検索やファイル閲覧ページは対象外です。
+- 表示言語は日本語と英語だけです。ブラウザの言語からの自動判定はしておらず、既定は日本語なので、英語で使うときは設定ページで切り替えます。`chrome://extensions` に出る拡張機能の説明文だけはブラウザの言語に従います（拡張の設定を読めないため）。
 - `cursor://` の起動は Chrome の外部プロトコル確認ダイアログを経由します。ブロックされる場合はオプションで `https://cursor.com/link/` 経由に切り替えてください。
 
 ## ファイル構成
 
 ```
 manifest.json          拡張機能の定義 (Manifest V3)
-src/config.js          対象の定義（既定の有効/無効とテンプレート）と設定の読み込み
+_locales/{ja,en}/      manifest の description（ブラウザの言語で選ばれる分）
+src/i18n.js            表示言語の保持とメッセージの取り出し
+src/locales/{ja,en}.js 文言とプロンプトの既定値
+src/config.js          対象の定義（言語に依らない構造）と設定の読み込み
 src/prompt.js          本文の整形、テンプレート展開、ディープリンク組み立て
 src/extract.js         GitHub の DOM から PR / Issue / コメント / CI の情報を抽出
 src/content.js         ボタンの生成と挿入、DOM 監視
 src/content.css        ボタンのスタイル
-src/options.*          設定ページ（対象ごとのセクションは TARGETS から生成）
-src/background.js      拡張機能アイコンのクリックで設定ページを開くサービスワーカー
+src/options.*          設定ページ（タブと対象のパネルは TARGETS から生成）
+src/background.js      拡張機能アイコンのクリックと初回インストールで設定ページを開くサービスワーカー
 icons/icon.svg         アイコンのソース（PNG はここから生成）
 tools/serve_test.py    動作確認用のローカルサーバー
 test/harness.html      フィクスチャを使ったロジック確認ページ

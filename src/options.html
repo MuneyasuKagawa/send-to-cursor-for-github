@@ -2,66 +2,79 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <title>GitHub Cursor Link の設定</title>
+    <title>Send to Cursor for GitHub</title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <main>
-      <h1>GitHub Cursor Link</h1>
+      <h1>Send to Cursor for GitHub</h1>
 
-      <section>
-        <h2>リンクの開き方</h2>
-        <label class="radio">
-          <input type="radio" name="linkMode" value="protocol" />
-          <span>
-            <strong><code>cursor://</code> で直接開く</strong>
-            <small>Cursor アプリを直接起動します。通常はこちら。</small>
-          </span>
-        </label>
-        <label class="radio">
-          <input type="radio" name="linkMode" value="web" />
-          <span>
-            <strong><code>https://cursor.com/link/</code> を経由する</strong>
-            <small>
-              直接起動が Chrome にブロックされる場合の代替。いったん cursor.com を開いてから
-              Cursor に渡します。
-            </small>
-          </span>
-        </label>
-      </section>
+      <!-- タブと対象パネルは TARGETS から options.js が組み立てる -->
+      <div class="tabs" id="tabs" role="tablist"></div>
 
-      <section>
-        <h2>ボタンのラベル</h2>
-        <label class="checkbox">
-          <input type="checkbox" id="showLabel" />
-          <span>
-            <strong>ラベルを表示する</strong>
-            <small>
-              オフにするとアイコンだけのボタンになります。入力済みのラベルはスクリーンリーダー
-              向けの名前として引き続き使われます。
-            </small>
-          </span>
-        </label>
-        <input type="text" id="buttonLabel" maxlength="20" />
-      </section>
+      <div id="panels">
+        <section
+          id="panel-general"
+          class="panel"
+          role="tabpanel"
+          aria-labelledby="tab-general"
+          hidden
+        >
+          <section class="field">
+            <h2 id="languageTitle" data-i18n="options.language.title"></h2>
+            <p class="hint" data-i18n="options.language.hint"></p>
+            <select id="language" aria-labelledby="languageTitle">
+              <option value="ja">日本語</option>
+              <option value="en">English</option>
+            </select>
+          </section>
 
-      <section>
-        <h2>ボタンを付ける対象</h2>
-        <p class="hint">
-          対象ごとに、有効にするかどうかと Cursor に渡すプロンプトを設定できます。
-          プロンプトは、値が取得できなかったプレースホルダーを含む行がまるごと削除され、
-          中身が空になった見出しも一緒に削除されます。
-        </p>
-        <div id="targets"></div>
-      </section>
+          <section class="field">
+            <h2 data-i18n="options.linkMode.title"></h2>
+            <label class="radio">
+              <input type="radio" name="linkMode" value="protocol" />
+              <span>
+                <strong data-i18n="options.linkMode.protocol.title"></strong>
+                <small data-i18n="options.linkMode.protocol.hint"></small>
+              </span>
+            </label>
+            <label class="radio">
+              <input type="radio" name="linkMode" value="web" />
+              <span>
+                <strong data-i18n="options.linkMode.web.title"></strong>
+                <small data-i18n="options.linkMode.web.hint"></small>
+              </span>
+            </label>
+          </section>
 
-      <div class="actions">
-        <button id="reset" type="button">すべてのプロンプトを既定値に戻す</button>
-        <span class="hint">変更は自動で保存されます。</span>
-        <span id="status" role="status" aria-live="polite"></span>
+          <section class="field">
+            <h2 id="buttonLabelTitle" data-i18n="options.label.title"></h2>
+            <label class="toggle">
+              <input type="checkbox" id="showLabel" role="switch" />
+              <span>
+                <strong data-i18n="options.label.show"></strong>
+                <small data-i18n="options.label.hint"></small>
+              </span>
+            </label>
+            <input type="text" id="buttonLabel" maxlength="20" aria-labelledby="buttonLabelTitle" />
+          </section>
+
+          <!-- まとめて戻す操作は、めったに使わず取り消せないので一般タブの末尾に置く -->
+          <section class="field">
+            <h2 data-i18n="options.reset.title"></h2>
+            <p class="hint" data-i18n="options.reset.hint"></p>
+            <button id="reset" type="button" class="danger" data-i18n="options.reset.all"></button>
+          </section>
+        </section>
       </div>
     </main>
 
+    <!-- 保存の結果。文字が入っているときだけ出る（options.css の #status:empty） -->
+    <p id="status" role="status" aria-live="polite"></p>
+
+    <script src="i18n.js"></script>
+    <script src="locales/ja.js"></script>
+    <script src="locales/en.js"></script>
     <script src="config.js"></script>
     <script src="options.js"></script>
   </body>

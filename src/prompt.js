@@ -85,7 +85,9 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
     return `${base}?text=${encodeURIComponent(prompt)}`;
   };
 
-  const TRUNCATION_NOTE = '\n\n…(本文が長いため以降を省略しました)';
+  function truncationNote() {
+    return `\n\n${ns.t('prompt.truncationNote')}`;
+  }
 
   /**
    * 8,000 文字制限に収まるまで本文だけを縮める。
@@ -110,17 +112,18 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
       return { url: full, prompt: render(body), truncated: false };
     }
 
+    const note = truncationNote();
     let low = 0;
     let high = body.length;
     while (low < high) {
       const mid = Math.ceil((low + high) / 2);
-      if (build(body.slice(0, mid) + TRUNCATION_NOTE).length <= urlLimit) {
+      if (build(body.slice(0, mid) + note).length <= urlLimit) {
         low = mid;
       } else {
         high = mid - 1;
       }
     }
-    const truncatedBody = body.slice(0, low) + TRUNCATION_NOTE;
+    const truncatedBody = body.slice(0, low) + note;
     return { url: build(truncatedBody), prompt: render(truncatedBody), truncated: true };
   };
 })(GHCursorLink);

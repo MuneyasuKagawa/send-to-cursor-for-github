@@ -1,0 +1,6 @@
+{
+  "appDescription": {
+    "message": "GitHub の PR と Issue に、その内容を渡すプロンプト付きで Cursor の新規チャットを開くボタンを追加します。",
+    "description": "Extension description shown in chrome://extensions and the Chrome Web Store."
+  }
+}

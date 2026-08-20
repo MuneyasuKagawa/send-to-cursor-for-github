@@ -1,0 +1,6 @@
+{
+  "appDescription": {
+    "message": "Adds a button to GitHub PRs and issues that opens a new Cursor chat with a prompt carrying their content.",
+    "description": "Extension description shown in chrome://extensions and the Chrome Web Store."
+  }
+}

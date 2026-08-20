@@ -1,17 +1,35 @@
 /**
- * 設定ページ。対象ごとのセクションは src/config.js の TARGETS から組み立てるので、
- * 対象を増やしてもこのファイルを触る必要はない。
+ * 設定ページ。
+ *
+ * タブは「一般」＋対象ごとの 1 枚で、対象のタブとパネルは src/config.js の TARGETS から
+ * 組み立てる。文言はすべて src/locales/*.js 経由なので、対象や言語を増やしてもここは触らない。
  */
 (function (ns) {
+  const tabs = document.getElementById('tabs');
+  const panels = document.getElementById('panels');
   const status = document.getElementById('status');
+  const languageSelect = document.getElementById('language');
   const buttonLabel = document.getElementById('buttonLabel');
   const showLabel = document.getElementById('showLabel');
 
   /** target.id -> { enabled: HTMLInputElement, template: HTMLTextAreaElement } */
   const controls = new Map();
 
+  /** タブ id ('general' または target.id) -> タブのボタン。挿入順がタブの並び順。 */
+  const tabButtons = new Map();
+
   /** textarea -> 最後のカーソル位置。プレースホルダーの挿入先に使う。 */
   const caretByTextarea = new WeakMap();
+
+  let language = ns.DEFAULT_LANGUAGE;
+  let activeTab = 'general';
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  }
 
   function linkModeInputs() {
     return [...document.querySelectorAll('input[name="linkMode"]')];
@@ -21,12 +39,89 @@
     buttonLabel.disabled = !showLabel.checked;
   }
 
-  function element(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text) node.textContent = text;
-    return node;
+  // --- 文言の差し込み -------------------------------------------------------
+
+  /** メッセージ中の `...` を code 要素にする。cursor:// のような字面を地の文と区別するため。 */
+  function setMessage(node, text) {
+    node.textContent = '';
+    String(text)
+      .split(/`([^`]+)`/)
+      .forEach((part, index) => {
+        if (!part) return;
+        node.append(index % 2 ? element('code', null, part) : part);
+      });
   }
+
+  /** 静的な HTML 側の文言。対象のパネルは作り直すので data-i18n を持たない。 */
+  function localize() {
+    document.documentElement.lang = language;
+    document.title = ns.t('options.title');
+    for (const node of document.querySelectorAll('[data-i18n]')) {
+      setMessage(node, ns.t(node.dataset.i18n));
+    }
+  }
+
+  // --- タブ -----------------------------------------------------------------
+
+  function addTab(id, label) {
+    const button = element('button', 'tab', label);
+    button.type = 'button';
+    button.id = `tab-${id}`;
+    button.setAttribute('role', 'tab');
+    button.setAttribute('aria-controls', `panel-${id}`);
+    button.addEventListener('click', () => selectTab(id));
+    tabButtons.set(id, button);
+    tabs.append(button);
+    return button;
+  }
+
+  /**
+   * オフの対象は、プロンプトの編集欄をたたんでタブにバッジを出す。
+   * 編集しても効かない欄を残しておくと、オンにし忘れたことに気づけない。
+   */
+  function syncTarget(id) {
+    const control = controls.get(id);
+    const button = tabButtons.get(id);
+    if (!control || !button) return;
+
+    const off = !control.enabled.checked;
+    control.prompt.toggleAttribute('data-collapsed', off);
+    const badge = button.querySelector('.tab-off');
+    if (badge) badge.hidden = !off;
+    button.classList.toggle('tab--off', off);
+  }
+
+  function selectTab(id, { focus = false } = {}) {
+    if (!tabButtons.has(id)) id = 'general';
+    activeTab = id;
+    for (const [tabId, button] of tabButtons) {
+      const selected = tabId === id;
+      button.setAttribute('aria-selected', String(selected));
+      // 選択中のタブだけを Tab キーの対象にし、タブ間は矢印キーで移動する
+      button.tabIndex = selected ? 0 : -1;
+      document.getElementById(`panel-${tabId}`).hidden = !selected;
+    }
+    if (focus) tabButtons.get(id).focus();
+    // 履歴を増やさずに、再読み込みしても同じタブに戻れるようにする
+    history.replaceState(null, '', `#${id}`);
+  }
+
+  function onTabKeydown(event) {
+    const ids = [...tabButtons.keys()];
+    const current = ids.indexOf(activeTab);
+    const moves = {
+      ArrowLeft: current - 1,
+      ArrowRight: current + 1,
+      Home: 0,
+      End: ids.length - 1,
+    };
+    const next = moves[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    selectTab(ids[(next + ids.length) % ids.length], { focus: true });
+  }
+
+  // --- 対象のパネル ---------------------------------------------------------
 
   /**
    * カーソル位置に挿入する。
@@ -53,7 +148,7 @@
   function placeholderButton(name, textarea) {
     const button = element('button', 'placeholder', `{{${name}}}`);
     button.type = 'button';
-    button.title = ns.PLACEHOLDER_HINTS[name] || '';
+    button.title = ns.placeholderHint(name);
     // フォーカスが移るとカーソル位置が分からなくなるので、textarea から外さない
     button.addEventListener('mousedown', (event) => event.preventDefault());
     button.addEventListener('click', () => insertPlaceholder(textarea, name));
@@ -62,57 +157,100 @@
 
   function placeholderHint(target, textarea) {
     const hint = element('p', 'hint');
-    hint.append('クリックでカーソル位置に挿入: ');
+    hint.append(`${ns.t('options.target.insert')} `);
     for (const name of target.placeholders) {
       hint.append(placeholderButton(name, textarea), ' ');
     }
     return hint;
   }
 
-  function buildTargetSection(target) {
-    const section = element('section', 'target');
+  function buildTargetPanel(target) {
+    const panel = element('section', 'panel');
+    panel.id = `panel-${target.id}`;
+    panel.dataset.targetPanel = '';
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', `tab-${target.id}`);
+    panel.hidden = true;
 
-    const toggle = element('label', 'checkbox');
     const enabled = document.createElement('input');
     enabled.type = 'checkbox';
-    const text = element('span');
-    text.append(element('strong', null, target.name), element('small', null, target.description));
-    toggle.append(enabled, text);
+    enabled.id = `enabled-${target.id}`;
+    // 見た目に合わせて「スイッチ」として読み上げさせる（チェックボックスではなくオン/オフ）
+    enabled.setAttribute('role', 'switch');
+    enabled.addEventListener('change', () => {
+      syncTarget(target.id);
+      saveNow();
+    });
+    const toggle = element('label', 'toggle');
+    toggle.append(enabled, element('span', null, ns.t('options.target.enabled')));
+
+    // 見出しを textarea の名前にする（見出しの下にひとつだけある入力欄なので）
+    const promptTitle = element('h3', null, ns.t('options.target.prompt'));
+    promptTitle.id = `prompt-${target.id}`;
 
     const template = document.createElement('textarea');
-    template.rows = 24;
+    template.id = `template-${target.id}`;
+    template.setAttribute('aria-labelledby', promptTitle.id);
+    template.rows = 22;
     template.spellcheck = false;
     for (const event of ['keyup', 'mouseup', 'select', 'blur']) {
       template.addEventListener(event, () => rememberCaret(template));
     }
+    template.addEventListener('input', saveSoon);
 
-    const details = document.createElement('details');
-    details.append(element('summary', null, 'プロンプト'));
-    details.append(placeholderHint(target, template), template);
-
-    const reset = element('button', null, 'この対象のプロンプトを既定値に戻す');
+    const reset = element('button', null, ns.t('options.target.reset'));
     reset.type = 'button';
     reset.addEventListener('click', () => {
-      template.value = target.template;
+      template.value = ns.defaultTemplate(target.id);
       // 戻す前のカーソル位置は新しい本文では意味を持たないので捨てる
       caretByTextarea.delete(template);
-      saveNow(`${target.name} のプロンプトを既定値に戻しました`);
+      saveNow(ns.t('options.status.reset', { name: ns.targetName(target.id) }));
     });
-    details.append(reset);
 
-    section.append(toggle, details);
-    controls.set(target.id, { enabled, template });
-    return section;
+    // オフのときにたたむ範囲。高さを詰めるのに overflow を切るので、入れ子にして
+    // 外側 (.collapse) で高さを、内側で切り取りを担当させる。
+    const prompt = element('div', 'collapse');
+    const inner = element('div');
+    inner.append(
+      promptTitle,
+      element('p', 'hint', ns.t('options.target.promptHint')),
+      placeholderHint(target, template),
+      template,
+      reset,
+    );
+    prompt.append(inner);
+
+    panel.append(
+      element('h2', null, ns.targetName(target.id)),
+      element('p', 'hint', ns.targetDescription(target.id)),
+      toggle,
+      prompt,
+    );
+
+    controls.set(target.id, { enabled, template, prompt });
+    return panel;
   }
 
+  /** タブと対象のパネルを作り直す。言語を切り替えたときもこれで丸ごと差し替える。 */
   function render() {
-    const container = document.getElementById('targets');
+    for (const panel of panels.querySelectorAll('[data-target-panel]')) panel.remove();
+    tabs.textContent = '';
+    tabButtons.clear();
+    controls.clear();
+
+    addTab('general', ns.t('options.tab.general'));
     for (const target of ns.TARGETS) {
-      container.append(buildTargetSection(target));
+      panels.append(buildTargetPanel(target));
+      const badge = element('span', 'tab-off', ns.t('options.tab.off'));
+      badge.hidden = true;
+      addTab(target.id, ns.targetName(target.id)).append(badge);
     }
+    // ハッシュで指定されたタブが無ければ selectTab が「一般」に落とす
+    selectTab(activeTab);
   }
 
   function apply(settings) {
+    languageSelect.value = settings.language;
     buttonLabel.value = settings.buttonLabel;
     showLabel.checked = settings.showLabel !== false;
     syncLabelInput();
@@ -122,8 +260,21 @@
     for (const [id, control] of controls) {
       control.enabled.checked = ns.isTargetEnabled(settings, id);
       control.template.value = ns.templateFor(settings, id);
+      // 描画直後で、まだ一度も表示していない状態なのでアニメーションは走らない
+      syncTarget(id);
     }
   }
+
+  /** 保存値を読み直して、表示言語・タブ・入力欄をまとめて作り直す */
+  async function load() {
+    const settings = await ns.loadSettings();
+    language = settings.language;
+    localize();
+    render();
+    apply(settings);
+  }
+
+  // --- 保存 -----------------------------------------------------------------
 
   let statusTimer = null;
 
@@ -139,7 +290,7 @@
   }
 
   /**
-   * プロンプトは ns.templateKey() のキーで対象ごとに保存する。
+   * プロンプトは ns.templateKey() のキーで対象ごと・言語ごとに保存する。
    * 既定値のままの対象は空文字にしておく。キーを消すには remove を別に投げることになり
    * 書き込み回数が倍になるので、「空 = 既定値を使う」を loadSettings 側と共有している。
    */
@@ -147,8 +298,8 @@
     const payload = {};
     for (const [id, control] of controls) {
       const value = control.template.value;
-      const customized = value.trim() && value !== ns.getTarget(id).template;
-      payload[ns.templateKey(id)] = customized ? value : '';
+      const customized = value.trim() && value !== ns.defaultTemplate(id);
+      payload[ns.templateKey(id, language)] = customized ? value : '';
     }
     return payload;
   }
@@ -170,10 +321,14 @@
    */
   function oversizedTemplate(payload) {
     for (const id of controls.keys()) {
-      const key = ns.templateKey(id);
+      const key = ns.templateKey(id, language);
       const bytes = itemBytes(key, payload[key]);
       if (bytes > ITEM_LIMIT) {
-        return `「${ns.getTarget(id).name}」のプロンプトが長すぎて保存できません（${bytes} / ${ITEM_LIMIT} バイト）。短くすると保存されます。`;
+        return ns.t('options.status.oversized', {
+          name: ns.targetName(id),
+          bytes,
+          limit: ITEM_LIMIT,
+        });
       }
     }
     return null;
@@ -206,17 +361,17 @@
       return true;
     } catch (error) {
       // 書き込み回数の上限などは事前に判定できないので、返ってきたメッセージをそのまま添える
-      showStatus(`保存できませんでした: ${error.message}`, true);
+      showStatus(ns.t('options.status.saveFailed', { error: error.message }), true);
       return false;
     }
   }
 
   let saveTimer = null;
 
-  function saveNow(message = '保存しました') {
+  function saveNow(message = ns.t('options.status.saved')) {
     clearTimeout(saveTimer);
     saveTimer = null;
-    save(message);
+    return save(message);
   }
 
   /**
@@ -228,32 +383,53 @@
     saveTimer = setTimeout(() => saveNow(), 1000);
   }
 
-  function watch() {
-    for (const input of linkModeInputs()) {
-      input.addEventListener('change', () => saveNow());
+  /**
+   * 表示言語を切り替える。
+   * textarea に入っているのは切り替え前の言語のプロンプトなので、先にその言語のキーで
+   * 保存してから language を書き換え、新しい言語の保存値で描き直す。
+   */
+  async function changeLanguage(next) {
+    if (next === language) return;
+    clearTimeout(saveTimer);
+    saveTimer = null;
+
+    // 保存できないまま切り替えると、編集中のプロンプトが表示から消えて戻せなくなる
+    if (!(await save())) {
+      languageSelect.value = language;
+      return;
     }
-    showLabel.addEventListener('change', () => saveNow());
-    buttonLabel.addEventListener('input', saveSoon);
-    for (const { enabled, template } of controls.values()) {
-      enabled.addEventListener('change', () => saveNow());
-      template.addEventListener('input', saveSoon);
+
+    try {
+      await chrome.storage.sync.set({ language: next });
+    } catch (error) {
+      showStatus(ns.t('options.status.saveFailed', { error: error.message }), true);
+      languageSelect.value = language;
+      return;
     }
-    // 待っている間にタブを離れられても取りこぼさない
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && saveTimer) saveNow();
-    });
+
+    await load();
+    showStatus(ns.t('options.status.saved'));
+  }
+
+  function resetAllTemplates() {
+    for (const [id, control] of controls) {
+      control.template.value = ns.defaultTemplate(id);
+      caretByTextarea.delete(control.template);
+    }
+    saveNow(ns.t('options.status.resetAll'));
   }
 
   /**
-   * 古い保存形式のキーを片付ける。中身は loadSettings が読んで textarea に入れてくれているので、
-   * 今の形で書き出せたことを確認してから消す（先に消すと移行前のプロンプトが失われる）。
+   * 古い保存形式のキーを片付ける。中身はすべて日本語のプロンプトで、loadSettings が
+   * 日本語のときだけ読んで textarea に入れてくれているので、日本語を表示していて、
+   * かつ今の形で書き出せたことを確認してから消す（先に消すと移行前のプロンプトが失われる）。
    */
-  const LEGACY_KEYS = ['promptTemplate', 'templates'];
-
   async function dropLegacyKeys() {
+    if (language !== 'ja') return;
+    const keys = ns.legacyTemplateKeys();
     try {
-      const stored = await chrome.storage.sync.get(LEGACY_KEYS);
-      const found = LEGACY_KEYS.filter((key) => stored[key] !== undefined);
+      const stored = await chrome.storage.sync.get(keys);
+      const found = keys.filter((key) => stored[key] !== undefined);
       if (!found.length) return;
       if (await save()) await chrome.storage.sync.remove(found);
     } catch {
@@ -261,21 +437,25 @@
     }
   }
 
-  showLabel.addEventListener('change', syncLabelInput);
-  document.getElementById('reset').addEventListener('click', () => {
-    for (const target of ns.TARGETS) {
-      const { template } = controls.get(target.id);
-      template.value = target.template;
-      caretByTextarea.delete(template);
+  function watch() {
+    languageSelect.addEventListener('change', () => changeLanguage(languageSelect.value));
+    for (const input of linkModeInputs()) {
+      input.addEventListener('change', () => saveNow());
     }
-    saveNow('すべてのプロンプトを既定値に戻しました');
-  });
+    showLabel.addEventListener('change', () => {
+      syncLabelInput();
+      saveNow();
+    });
+    buttonLabel.addEventListener('input', saveSoon);
+    document.getElementById('reset').addEventListener('click', resetAllTemplates);
+    tabs.addEventListener('keydown', onTabKeydown);
+    // 待っている間にタブを離れられても取りこぼさない
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && saveTimer) saveNow();
+    });
+  }
 
-  render();
-  ns.loadSettings().then((settings) => {
-    apply(settings);
-    // 値を入れ終えてから監視を始める。apply 自体を保存の起点にしないため。
-    watch();
-    dropLegacyKeys();
-  });
+  activeTab = location.hash.slice(1) || 'general';
+  watch();
+  load().then(dropLegacyKeys);
 })(GHCursorLink);

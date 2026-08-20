@@ -16,7 +16,6 @@
   // コピー完了の合図に使うチェックマーク（octicon check-16）
   const CHECK_ICON_PATH =
     'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z';
-  const COPIED_TEXT = 'コピーしました';
   const FEEDBACK_MS = 1500;
 
   // 新しい Issue UI の絵文字リアクションボタン。クラス名は CSS モジュールの生成物。
@@ -55,8 +54,8 @@
 
   function tooltipText(tooltip, truncated) {
     return [
-      truncated ? `${tooltip}（本文が長いため一部省略）` : tooltip,
-      'Shift+クリックでプロンプトをコピー',
+      truncated ? ns.t('tooltip.truncated', { tooltip }) : tooltip,
+      ns.t('tooltip.shiftToCopy'),
     ].join('\n');
   }
 
@@ -108,7 +107,7 @@
     clearTimeout(feedbackTimerByButton.get(anchor));
 
     if (label) {
-      label.textContent = COPIED_TEXT;
+      label.textContent = ns.t('button.copied');
     } else {
       path.setAttribute('d', CHECK_ICON_PATH);
     }
@@ -141,16 +140,15 @@
 
   /** body は cleanCommentBody を通したもの。空でもよい対象（PR 全体 / CI）があるので判定は呼び出し側で行う。 */
   function build(targetId, values, body) {
-    const target = ns.getTarget(targetId);
     const built = ns.buildPromptDeeplink({
       template: ns.templateFor(settings, targetId),
       values,
       body,
-      bodyKey: target.bodyKey,
+      bodyKey: ns.getTarget(targetId).bodyKey,
       linkMode: settings.linkMode,
       urlLimit: ns.URL_LIMIT,
     });
-    return { ...built, tooltip: target.tooltip };
+    return { ...built, tooltip: ns.targetTooltip(targetId) };
   }
 
   function enabled(targetId) {
@@ -336,7 +334,7 @@
       try {
         injectAll();
       } catch (error) {
-        console.error('[GitHub Cursor Link] ボタンの挿入に失敗しました', error);
+        console.error(`[Send to Cursor for GitHub] ${ns.t('log.injectFailed')}`, error);
       }
     }, 150);
   }

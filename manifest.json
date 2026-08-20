@@ -1,8 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "GitHub Cursor Link",
+  "name": "Send to Cursor for GitHub",
+  "short_name": "Send to Cursor",
   "version": "1.0.0",
-  "description": "GitHub の PR と Issue に、その内容を渡すプロンプト付きで Cursor の新規チャットを開くボタンを追加します。",
+  "description": "__MSG_appDescription__",
+  "default_locale": "ja",
   "permissions": ["storage"],
   "background": {
     "service_worker": "src/background.js"
@@ -11,6 +13,9 @@
     {
       "matches": ["https://github.com/*"],
       "js": [
+        "src/i18n.js",
+        "src/locales/ja.js",
+        "src/locales/en.js",
         "src/config.js",
         "src/prompt.js",
         "src/extract.js",
@@ -25,7 +30,7 @@
     "open_in_tab": true
   },
   "action": {
-    "default_title": "GitHub Cursor Link",
+    "default_title": "Send to Cursor for GitHub",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
