@@ -1,20 +1,26 @@
 # GitHub Cursor Link
 
-GitHub のプルリクエストのコメントに、そのコメントを検証するプロンプト付きで Cursor の新しいチャットを開くボタンを追加する Chrome 拡張です。
+GitHub の PR と Issue に、その内容を渡すプロンプト付きで Cursor の新しいチャットを開くボタンを追加する Chrome 拡張です。
 
 中継サーバーを経由せず、`cursor://anysphere.cursor-deeplink/prompt?text=...` を直接開きます。
 
 ## できること
 
-- PR コメントの絵文字リアクションボタンの右隣に `Cursor` ボタンを追加する
-- クリックすると、以下を含むプロンプトが入った状態で Cursor の新規チャットが開く
-  - リポジトリ / PR 番号 / PR URL / head ブランチ / base ブランチ（別ブランチで作業してしまわないよう、着手前の確認を明示的に指示する）
-  - コメント URL / 投稿者 / 対象ファイル / 対象行
-  - コメント本文（Markdown 原文）
-  - 指摘の妥当性を検証し、修正箇所と方針を提示するまでを依頼する定型文（回答は日本語に固定）
-- Shift + クリックで、開く代わりにプロンプトをクリップボードへコピーする
+ボタンを付ける対象は 5 種類あり、対象ごとに有効/無効とプロンプトのテンプレートを設定できます。
 
-対応ページは PR の **Conversation** タブと **Files changed** タブです。PR の説明文（1 件目の本文）にはボタンを出しません。
+| 対象 | ボタンの位置 | プロンプトの内容 |
+| --- | --- | --- |
+| PR のコメント | リアクション行の末尾 | コメントの内容を検証し、対応方針を提示させる |
+| PR 全体 | PR ヘッダーのボタン列と、PR 説明文のリアクション行の末尾 | base と head の差分をレビューさせる |
+| 失敗した CI チェック | チェック一覧の行の右端 | 失敗の原因を調査させる |
+| Issue の本文 | リアクション行の末尾 | 実装方針を立てさせる |
+| Issue のコメント | リアクション行の末尾 | コメントの内容を検証し、対応方針を提示させる |
+
+どのプロンプトにも、リポジトリと（PR なら）head / base ブランチを載せ、着手前に一致を確認するよう指示しています。別ブランチで作業してしまうのを防ぐためです。回答は日本語に固定しています。
+
+コメントや説明文の本文は Markdown 原文をそのまま渡します。Shift + クリックすると、開く代わりにプロンプトをクリップボードへコピーします。
+
+対応ページは PR の **Conversation** / **Files changed** / **Checks** タブと、Issue のページです。PR の説明文には「PR のコメント」ではなく「PR 全体」のボタンが付きます。説明文はもともと「PR 全体」のプロンプトの本文として使われているので、その真下にボタンを置くのが素直で、Issue の本文にボタンが付くのと形も揃います。
 
 ## インストール
 
@@ -36,11 +42,20 @@ for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$
 | --- | --- | --- |
 | リンクの開き方 | `cursor://` 直接 | Chrome に直接起動をブロックされる場合は `https://cursor.com/link/` 経由に切り替えます |
 | ボタンのラベル | `Cursor` | 「ラベルを表示する」をオフにすると、アイコンのみの丸いボタンになります（ラベルの文字列はツールチップと読み上げ用の名前として残ります） |
-| プロンプトのテンプレート | `src/config.js` の既定値 | 下記プレースホルダーが使えます |
+| ボタンを付ける対象 | 5 種類すべて有効 | 対象ごとにボタンを出すかどうかを切り替えます |
+| プロンプトのテンプレート | `src/config.js` の `TARGETS` の既定値 | 対象ごとに編集できます |
 
 ### テンプレートのプレースホルダー
 
-`{{repository}}` `{{prNumber}}` `{{prTitle}}` `{{prUrl}}` `{{headBranch}}` `{{headLabel}}` `{{baseBranch}}` `{{commentUrl}}` `{{author}}` `{{filePath}}` `{{lines}}` `{{commentBody}}`
+使えるプレースホルダーは対象ごとに違います（設定ページの各対象にも表示されます）。
+
+| 対象 | プレースホルダー |
+| --- | --- |
+| PR のコメント | `{{repository}}` `{{prNumber}}` `{{prTitle}}` `{{prUrl}}` `{{headBranch}}` `{{headLabel}}` `{{baseBranch}}` `{{commentUrl}}` `{{author}}` `{{filePath}}` `{{lines}}` `{{commentBody}}` |
+| PR 全体 | PR の共通項目 + `{{author}}` `{{prBody}}` |
+| 失敗した CI チェック | PR の共通項目 + `{{checkName}}` `{{checkUrl}}` `{{failureOutput}}` |
+| Issue の本文 | `{{repository}}` `{{issueNumber}}` `{{issueTitle}}` `{{issueUrl}}` `{{issueLabels}}` `{{author}}` `{{issueBody}}` |
+| Issue のコメント | `{{repository}}` `{{issueNumber}}` `{{issueTitle}}` `{{issueUrl}}` `{{commentUrl}}` `{{author}}` `{{commentBody}}` |
 
 値が取得できなかったプレースホルダーを含む行は、まるごと出力から削除されます。「対象ファイル:」のような見出しだけが残ることはありません。
 
@@ -48,19 +63,89 @@ for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$
 
 ## 実装メモ
 
+### 対象の定義
+
+ボタンを付ける対象は `src/config.js` の `TARGETS` に 1 件ずつ定義しています。既定の有効/無効、プロンプトのテンプレート、設定ページのセクションはすべてここから導出されるので、対象を増やすときは `TARGETS` への追記と、`src/extract.js` / `src/content.js` への抽出処理の追加だけで済みます。
+
+### ブランチ名の取り出し方
+
+旧 UI では `.head-ref` / `.base-ref`、それが無ければ `.base-ref` を含むかどうかで `.commit-ref` を head と base に振り分けます。
+
+新しい PR UI にはこれらのクラスが無く、ブランチは `[data-component="BranchName"]` のリンクになります。ヘッダーの説明部（`[data-component="PageHeader.Description"]`）は「〜 wants to merge N commits into <base> from <head>」の順に並ぶので、この範囲に絞って DOM 順の 1 件目を base、2 件目を head として扱います。
+
+ブランチ名はリンクのテキストではなく `href` の `/owner/repo/tree/<ブランチ名>` から取ります。テキストは fork のとき `owner:branch` 形式になるうえ、`feature/foo` のようにスラッシュを含む名前でも `href` なら正確に取れるためです。
+
 ### コメント本文の取り出し方
 
 コメントの「...」メニューにある **Copy Markdown**（`clipboard-copy[value]`）が本文の Markdown 原文を持っているので、これを第一候補として使います。取れない場合は `.js-comment-body` の `innerText` にフォールバックします。
+
+新しい PR UI ではこのメニューの中身が `include-fragment` の遅延読み込みになり、ホバーするまで原文が DOM に存在しません。そのためボタンを差し込む時点では代用テキストでプロンプトを組み立て、ボタンにマウスが乗った（またはフォーカスが当たった）時点で `details-menu[preload]` が反応する `mouseover` / `focusin` を送って GitHub 自身に読み込ませ、原文が届いたらリンクとコピー用のプロンプトを差し替えます。メニューが開くわけではないので見た目には影響しません。読み込みに失敗しても、代用テキストのプロンプトでそのまま動きます。
+
+新しい Issue UI では「Copy Markdown」が React のメニュー項目になり、`clipboard-copy[value]` のように DOM から原文を読む方法がありません（上記のホバー方式も効きません）。代わりに、ページに埋め込まれた GraphQL のプリロード結果から原文を取ります。
+
+```
+script[type="application/json"][data-target="react-app.embeddedData"]
+  └ payload.preloadedQueries[].result.data.repository.issue
+      ├ body / author / url                     Issue 本文
+      └ frontTimelineItems.edges[].node         コメント（body / author / url を同じ形で持つ）
+```
+
+DOM 側のコメントは `data-testid="comment-viewer-outer-box-<GraphQL のノード ID>"` になっていて、この接尾辞が埋め込みデータ側の `node.id` と一致するので、コメントと原文を確実に対応付けられます。クエリの並び順には依存せず、`issue` を持つものを探します。
+
+ただしこれは初回読み込み時のスナップショットです。ページネーションで後から読み込まれたコメントや投稿直後のコメントは含まれないので、その場合は代用テキストになります。
+
+代用テキストは描画済み HTML から取るため、`Fixes facebook/react#37323` が `Fixes #37323` になったり、`### 見出し` やコードフェンスが失われたりします。原文を優先しているのはこのためです。
 
 原文のうち画像（`<img>` / `<picture>` と、それらを包むリンク）は `src/prompt.js` で除去しています。画像はプロンプトに入れても情報にならないうえ、バッジ画像のリンクは `href` にプロンプトを URL エンコードして持つことがあり、それを本文として再エンコードすると数千文字に膨らんで後述の 8,000 文字制限を圧迫するためです。410 文字のプロンプトを埋め込んだバッジ 1 個で、ディープリンク上は 2,705 文字を占めました。
 
 ### ボタンの挿入位置
 
-GitHub の DOM は現行の Rails 製と新しい React 製が混在しているため、以下の順で挿入先を探します（1 コメントにつき 1 個だけ挿入）。
+GitHub の DOM は現行の Rails 製と新しい React 製が混在しているため、コメント（PR / Issue 共通）では以下の順で挿入先を探します（1 コメントにつき 1 個だけ挿入）。
 
-1. `reactions-menu`（絵文字リアクションボタン）の直後
-2. 表示されている `.comment-reactions` の末尾
-3. コメントヘッダーの `.timeline-comment-actions` の先頭
+1. `reactions-menu`（絵文字リアクションを追加するボタン）を含む `.comment-reactions` の末尾
+2. 新しい Issue UI の絵文字リアクションを追加するボタン（`ReactionViewerAnchor`）を包む行の末尾
+3. 表示されている `.comment-reactions` の末尾
+4. コメントヘッダーの `.timeline-comment-actions` の先頭
+
+1〜3 はどれもリアクションの行で、常にその末尾、つまり付いている絵文字リアクションの右隣に入れます。行の途中に入れると絵文字のまとまりが分断されるためです。
+
+ただし絵文字リアクションはサーバーが返す HTML に含まれず、後から React が行の末尾へ足します（実機の Issue ページの HTML には `ReactionViewerAnchorButton` だけがあり、`reactionToggleButton` は 1 個もありません）。挿入した時点では末尾でも、あとからリアクションが増えるとボタンが絵文字の手前に取り残されます。そのためリアクション行に入れたボタンには印を付け、DOM の変化を見るたびに末尾へ戻しています。
+
+「PR 全体」はヘッダーと PR 説明文の 2 か所に入れます。ヘッダー側は `.gh-header-actions`（Rails 版）→ `[data-component="PH_Actions"]`（新 UI で View status / Code が並ぶ列）→ `[data-testid="pr-header-actions"]` → `.gh-header-meta` の順で探し、**表示されている**最初の要素の末尾に入れます。新 UI ではボタン列の中身が空のとき `d-none` が付くため、隠れている要素は飛ばします。スクロール追従用のヘッダーにも同じ枠があるので、ヘッダー側はページ全体で 1 個だけに絞っています。説明文側はコメントと同じ挿入先の探し方をします。
+
+Conversation タブでは同じボタンがヘッダーと説明文の両方に出ます。位置がタブによって変わらない方が覚えやすいので重複を許しています。説明文が無い Files changed / Checks タブではヘッダー側だけが入口になります。
+
+「失敗した CI チェック」はチェック行の末尾に入れます。旧 UI では「Details」リンク、新 UI では「…」メニューの右隣になります。
+
+PR と Issue の説明文は、タイムラインの中で唯一 id が `issue-<番号>` になっています。これでコメントと説明文を見分け、PR の説明文には「PR のコメント」ではなく「PR 全体」のボタンを付けます。新しい PR UI では説明文が `#issue-<番号>` の中に `#pullrequest-<番号>` として入れ子で描画され、`closest()` では内側が先に見つかるため、祖先の id も確認します。新しい Issue UI では id ではなく `[data-testid="issue-body"]` で見分けます。
+
+### 新しい Issue UI
+
+Issue ページは PR より先に React 化が進んでいて、`.js-comment` や `reactions-menu`、`.js-comment-body` といった Rails 版のクラスがひとつも残っていません。そのためコメントの起点、本文のテキスト、投稿者、permalink をすべて `data-testid` から取ります。
+
+| 項目 | 取得先 |
+| --- | --- |
+| 本文の起点 | `[data-testid="issue-body"]` |
+| コメントの起点 | `[data-testid^="comment-viewer-outer-box-"]` |
+| 本文のテキスト | `[data-testid="markdown-body"]` |
+| 本文の投稿者 / permalink | `[data-testid="issue-body-header-author"]` / `[data-testid="issue-body-header-link"]` |
+| コメントの投稿者 / permalink | `[data-testid="avatar-link"]` / `a[href*="#issuecomment-"]`（旧 UI と同じ） |
+
+ラベルは `[data-testid="issue-labels"]` から取れますが、各リンクが説明文を `.sr-only` で内包しているため、そのまま `textContent` を読むとラベル名に説明文が続いてしまいます。読み上げ専用の要素を除いてから読んでいます。
+
+### 失敗した CI チェックの見分け方
+
+チェック行のクラス名は新旧 UI で変わりますが、詳細ページへのリンクの href が `check_run_id=` や `/actions/runs/` を含む形は安定しているので、リンクを起点に `closest()` で行を辿ります。1 行に複数のチェックリンクが含まれる場合は一覧そのものを掴んでいるとみなして対象外にします。
+
+失敗の判定は赤い × アイコン（`.octicon-x` など）を第一の材料にし、無ければ状態テキスト（`Failing after 2m` など）を見ます。状態テキストは旧 UI の `.status-meta` と新 UI の `[class*="StatusCheckRow-module__titleDescription"]` に絞って読み、どちらも見つからないときだけ行全体にフォールバックします。最初から行全体を見ると、`test-failure-handling` のようなチェック名に反応してしまうためです。チェック名は旧 UI では `strong` などですが、新 UI では `h4` に入ります。
+
+新 UI のクラス名は CSS モジュールの生成物で末尾にハッシュが付くため、前方一致で拾っています。コンポーネント名が変わると外れます。
+
+ログ全文は DOM に無いうえ 8,000 文字にも収まらないため、プロンプトにはチェック名・URL・状態テキストだけを載せ、原因の調査から依頼する形にしています。Checks タブで単一のチェックを開いているときだけ、表示されている annotation を本文に足します。一覧に並んだ行からは、その annotation がどのチェックのものか特定できないので使いません。
+
+### 空になった見出しの削除
+
+値が取れなかったプレースホルダーの行を落とした結果、中身が空になった見出しも一緒に削除します。説明文の無い PR で「## PR の説明」だけが取り残されるのを防ぐためです。
 
 ### 縦位置の揃え方
 
@@ -74,41 +159,62 @@ GitHub の DOM は現行の Rails 製と新しい React 製が混在している
 
 ### URL 長
 
-Cursor のディープリンクは URL 全体で 8,000 文字が上限です（[Deeplinks | Cursor Docs](https://cursor.com/docs/reference/deeplinks) の FAQ: "Deeplink URLs have a maximum length of 8,000 characters." = 「ディープリンクの URL は最大 8,000 文字です」）。超える場合はコメント本文だけを二分探索で切り詰め、ブランチ名や依頼内容は必ず残します。
+Cursor のディープリンクは URL 全体で 8,000 文字が上限です（[Deeplinks | Cursor Docs](https://cursor.com/docs/reference/deeplinks) の FAQ: "Deeplink URLs have a maximum length of 8,000 characters." = 「ディープリンクの URL は最大 8,000 文字です」）。超える場合は本文だけを二分探索で切り詰め、ブランチ名や依頼内容は必ず残します。
 
 ## 動作確認
 
-`test/fixtures/review-thread.html`（GitHub のレビュースレッドの DOM を再現した架空のフィクスチャ）を使って、ブラウザ上でロジックを確認できます。
+`test/fixtures/` の架空のフィクスチャ（GitHub の DOM を再現したもので、実際のページを保存したものではありません）を使って、ブラウザ上でロジックを確認できます。
 
 ```bash
 python3 tools/serve_test.py 8765
-# ブラウザで開く
+# PR ページ相当（説明文 + レビュースレッド + チェック一覧 / Rails 版の DOM）
 open http://127.0.0.1:8765/octocat/hello-world/pull/42
+# PR ページ相当（Primer React 製の新 UI の DOM）
+open 'http://127.0.0.1:8765/octocat/hello-world/pull/42?ui=new'
+# Issue ページ相当（本文 + コメント）
+open http://127.0.0.1:8765/octocat/hello-world/issues/7
+# Issue ページ相当（React 製の新 UI の DOM）
+open 'http://127.0.0.1:8765/octocat/hello-world/issues/7?ui=new'
 ```
 
-`location.pathname` から owner/repo/PR 番号を取り出す実装のため、サーバーは `/owner/repo/pull/123` 形式のパスでハーネスを返します。ページ下部に、抽出した PR 情報と生成されたプロンプトが表示されます。
+`location.pathname` から owner/repo と番号を取り出す実装のため、サーバーは `/owner/repo/pull/123` や `/owner/repo/issues/7` 形式のパスでハーネスを返します。ハーネスは URL の `pull` / `issues` と `?ui=new` で読み込むフィクスチャとヘッダーを切り替えます。ページ下部に、抽出したページ情報と生成されたプロンプトが対象名付きで表示されます。
+
+PR の `?ui=new` では、遅延読み込みの「...」メニューもスタブで再現します。ハーネスは全ボタンに `mouseenter` を送ってから結果を出すので、Markdown 原文への差し替えが働いたボタンにはその旨が表示されます。Issue の `?ui=new` では、埋め込みデータに 2 件目のコメントを意図的に含めておらず、原文が取れる場合と代用テキストになる場合の両方を確認できます。あわせて絵文字リアクションの遅延描画も再現し（`data-deferred-reactions` を持つ行に後からリアクションを足す）、ボタンが絵文字の手前に取り残されないかを確認できます。
+
+各ボタンには挿入先の行と、その行に並んでいる要素が表示されるので、絵文字リアクションとの前後関係もそこで確認できます。
+
+`?off=prComment,ciFailure` のようにクエリを付けると、その対象を無効にした状態を再現できます。
 
 ## 既知の制約
 
 - 対象は `https://github.com/*` のみです。GitHub Enterprise で使う場合は `manifest.json` の `content_scripts[].matches` にホストを追加してください。
-- GitHub は PR ページを React 製の新 UI へ順次移行しています。ブランチ名やコメント本文の取得は新旧どちらの DOM でも動くよう複数の選択子を試しますが、今後の DOM 変更で取得できなくなる可能性があります。取得できなかった項目はプロンプトから該当行が落ちるだけで、ボタン自体は動作します。
+- GitHub は PR / Issue ページを React 製の新 UI へ順次移行しています。移行の度合いはページごとに違い、PR はヘッダーとチェック一覧が新 UI でコメント部分はまだ Rails 製、Issue は全体が新 UI です。新 UI 側の選択子は実際の PR / Issue ページ（`react/react`）の DOM を調べて決め、ブランチ名の取得、説明文の入れ子判定、ヘッダーへの挿入位置、チェック行の名前と状態テキストの取得、遅延読み込みの原文取得、Issue の埋め込みデータからの原文取得、絵文字リアクションが後から描画されること（サーバーが返す HTML に含まれないこと）までを実機で確認済みです。ただし CSS モジュール由来のクラス名を前方一致で使っている箇所と、GitHub 内部の埋め込みデータに依存している箇所があるため、今後の変更で外れる可能性があります。取得できなかった項目はプロンプトから該当行が落ちるだけで、ボタン自体は動作します。
+- 新しい Issue UI で Markdown 原文の取得元にしている埋め込みデータは初回読み込み時のスナップショットです。ページネーションで後から読み込まれたコメントや、投稿直後のコメントでは原文が取れず、描画済み HTML のテキストで代用します。
+- 「失敗した CI チェック」のうち、**失敗した行そのもの**の見た目はフィクスチャ上でしか確認できていません。実機で確認できたのは Skipped / Successful の行だけで、失敗行のアイコンや状態テキストの実際の文言（`Failing after 2m` としています）は未確認です。想定と違う場合はボタンが出ませんが、他の対象には影響しません。
+- Discussions、コミットのコメント、コード検索やファイル閲覧ページは対象外です。
 - `cursor://` の起動は Chrome の外部プロトコル確認ダイアログを経由します。ブロックされる場合はオプションで `https://cursor.com/link/` 経由に切り替えてください。
 
 ## ファイル構成
 
 ```
 manifest.json          拡張機能の定義 (Manifest V3)
-src/config.js          既定設定とプロンプトテンプレート
+src/config.js          対象の定義（既定の有効/無効とテンプレート）と設定の読み込み
 src/prompt.js          本文の整形、テンプレート展開、ディープリンク組み立て
-src/extract.js         GitHub の DOM から PR / コメント情報を抽出
+src/extract.js         GitHub の DOM から PR / Issue / コメント / CI の情報を抽出
 src/content.js         ボタンの生成と挿入、DOM 監視
 src/content.css        ボタンのスタイル
-src/options.*          設定ページ
+src/options.*          設定ページ（対象ごとのセクションは TARGETS から生成）
 src/background.js      拡張機能アイコンのクリックで設定ページを開くサービスワーカー
 icons/icon.svg         アイコンのソース（PNG はここから生成）
 tools/serve_test.py    動作確認用のローカルサーバー
 test/harness.html      フィクスチャを使ったロジック確認ページ
 test/fixtures/         GitHub の DOM を再現したフィクスチャ
+  pr-body.html           PR の説明文
+  review-thread.html     PR のレビュースレッド
+  pr-checks.html         PR のチェック一覧（失敗 1 件 + 成功 1 件）
+  pr-new-ui.html         Primer React 製の新 UI の PR ページ（説明文 + コメント + チェック一覧）
+  issue.html             Issue の本文とコメント
+  issue-new-ui.html      React 製の新 UI の Issue ページ（本文 + コメント + 埋め込みデータ）
 ```
 
 ## ライセンス

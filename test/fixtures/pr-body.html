@@ -1,0 +1,93 @@
+<!--
+  PR の説明文（タイムライン 1 件目）の DOM を再現したフィクスチャ。
+  説明文だけ id が "issue-<番号>" になっており、この形かどうかで
+  「PR のコメント」の対象から外して「PR 全体」の本文として扱う。
+
+  抽出処理が依存している要素:
+    - id="issue-<番号>"                                説明文かどうかの判定
+    - .timeline-comment-actions clipboard-copy[value]  本文の Markdown 原文
+    - .author                                          作成者（PR ヘッダー側が優先）
+-->
+<div
+  id="issue-1234567890"
+  class="timeline-comment-group js-minimizable-comment-group js-targetable-element comment previewable-edit js-task-list-container js-comment unminimized-comment"
+>
+  <div class="ml-n1 flex-items-center clearfix d-flex flex-row flex-items-start">
+    <h3 class="f5 text-normal py-2" style="flex: 1 1 auto">
+      <div class="d-flex flex-items-center flex-wrap gap-1">
+        <strong>
+          <a class="author Link--primary text-bold" href="/octocat">octocat</a>
+        </strong>
+        <a
+          href="#issue-1234567890"
+          id="issue-1234567890-permalink"
+          class="Link--secondary js-timestamp"
+          ><relative-time datetime="2026-01-04T09:00:00Z" class="no-wrap">Jan 4, 2026</relative-time></a
+        >
+      </div>
+    </h3>
+
+    <div class="d-flex flex-row-reverse flex-items-center flex-shrink-0 tmp-pl-3">
+      <div class="timeline-comment-actions flex-shrink-0 d-flex flex-items-center">
+        <details class="details-overlay details-reset position-relative d-inline-block">
+          <summary
+            class="timeline-comment-action Link--secondary Button--link Button--medium Button"
+            aria-haspopup="menu"
+            role="button"
+            >…</summary
+          >
+          <details-menu class="dropdown-menu dropdown-menu-sw show-more-popover">
+            <span>
+              <clipboard-copy
+                role="menuitem"
+                class="dropdown-item btn-link"
+                value="## Summary
+
+Add `GET /items` so the client can list items without fetching each one.
+
+## Changes
+- add the `listItems` handler and its response structs
+- wire the route in `internal/api/router.go`
+
+## Testing
+- `go test ./internal/api/...`"
+                >Copy Markdown</clipboard-copy
+              >
+            </span>
+          </details-menu>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="edit-comment-hide">
+    <div
+      class="comment-body markdown-body js-comment-body soft-wrap user-select-contain d-block css-overflow-wrap-anywhere"
+    >
+      <h2>Summary</h2>
+      <p>Add <code>GET /items</code> so the client can list items without fetching each one.</p>
+    </div>
+  </div>
+
+  <div class="tmp-ml-5 edit-comment-hide">
+    <div
+      class="comment-reactions just-bottom js-reactions-container js-reaction-buttons-container social-reactions reactions-container d-flex"
+    >
+      <reactions-menu tabindex="-1">
+        <details
+          class="dropdown details-reset details-overlay d-inline-block new-reactions-dropdown js-reaction-popover-container js-comment-header-reaction-button"
+        >
+          <summary
+            aria-label="Add or remove reactions"
+            aria-haspopup="true"
+            class="circle reaction-dropdown-button reaction-dropdown-button--inline btn-invisible btn p-0 tmp-p-0 mr-1 tmp-mr-1 d-flex flex-justify-center flex-items-center color-bg-subtle border color-border-muted"
+          >
+            <svg height="18" width="18" viewBox="0 0 16 16" aria-hidden="true" class="octicon octicon-smiley social-button-emoji">
+              <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
+            </svg>
+          </summary>
+        </details>
+      </reactions-menu>
+    </div>
+  </div>
+</div>

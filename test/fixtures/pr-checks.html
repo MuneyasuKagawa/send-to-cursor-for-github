@@ -1,0 +1,47 @@
+<!--
+  PR 会話タブ下部のチェック一覧の DOM を再現したフィクスチャ。
+  失敗した行にだけボタンが付くことを確認する（1 件目が失敗、2 件目が成功）。
+
+  抽出処理が依存している要素:
+    - a[href*="check_run_id="]   チェック詳細へのリンク（行を辿る起点、挿入位置）
+    - .octicon-x                 失敗の判定（無い場合は状態テキストを見る）
+    - strong                     チェック名
+    - .status-meta               状態テキスト
+-->
+<div class="branch-action-item js-details-container">
+  <div class="merge-status-list">
+    <div class="merge-status-item d-flex flex-items-center">
+      <span class="merge-status-icon d-flex flex-items-center">
+        <svg class="octicon octicon-x color-fg-danger" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"></path>
+        </svg>
+      </span>
+      <span class="flex-auto tmp-ml-2">
+        <strong>CI / unit-test (pull_request)</strong>
+        <span class="status-meta d-inline-block">— Failing after 2m</span>
+      </span>
+      <a
+        href="/octocat/hello-world/pull/42/checks?check_run_id=987654321"
+        class="status-actions offset-1"
+        >Details</a
+      >
+    </div>
+
+    <div class="merge-status-item d-flex flex-items-center">
+      <span class="merge-status-icon d-flex flex-items-center">
+        <svg class="octicon octicon-check color-fg-success" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path>
+        </svg>
+      </span>
+      <span class="flex-auto tmp-ml-2">
+        <strong>CI / lint (pull_request)</strong>
+        <span class="status-meta d-inline-block">— Successful in 41s</span>
+      </span>
+      <a
+        href="/octocat/hello-world/pull/42/checks?check_run_id=987654322"
+        class="status-actions offset-1"
+        >Details</a
+      >
+    </div>
+  </div>
+</div>

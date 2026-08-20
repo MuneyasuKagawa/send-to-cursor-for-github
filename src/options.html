@@ -32,27 +32,32 @@
 
       <section>
         <h2>ボタンのラベル</h2>
+        <label class="checkbox">
+          <input type="checkbox" id="showLabel" />
+          <span>
+            <strong>ラベルを表示する</strong>
+            <small>
+              オフにするとアイコンだけのボタンになります。入力済みのラベルはスクリーンリーダー
+              向けの名前として引き続き使われます。
+            </small>
+          </span>
+        </label>
         <input type="text" id="buttonLabel" maxlength="20" />
       </section>
 
       <section>
-        <h2>プロンプトのテンプレート</h2>
+        <h2>ボタンを付ける対象</h2>
         <p class="hint">
-          使えるプレースホルダー:
-          <code>{{repository}}</code> <code>{{prNumber}}</code> <code>{{prTitle}}</code>
-          <code>{{prUrl}}</code> <code>{{headBranch}}</code> <code>{{headLabel}}</code>
-          <code>{{baseBranch}}</code> <code>{{commentUrl}}</code> <code>{{author}}</code>
-          <code>{{filePath}}</code> <code>{{lines}}</code> <code>{{commentBody}}</code>
+          対象ごとに、有効にするかどうかと Cursor に渡すプロンプトを設定できます。
+          プロンプトは、値が取得できなかったプレースホルダーを含む行がまるごと削除され、
+          中身が空になった見出しも一緒に削除されます。
         </p>
-        <p class="hint">
-          値が取得できなかったプレースホルダーを含む行は、まるごと出力から削除されます。
-        </p>
-        <textarea id="promptTemplate" rows="26" spellcheck="false"></textarea>
+        <div id="targets"></div>
       </section>
 
       <div class="actions">
-        <button id="save" type="button" class="primary">保存</button>
-        <button id="reset" type="button">テンプレートを既定値に戻す</button>
+        <button id="reset" type="button">すべてのプロンプトを既定値に戻す</button>
+        <span class="hint">変更は自動で保存されます。</span>
         <span id="status" role="status" aria-live="polite"></span>
       </div>
     </main>

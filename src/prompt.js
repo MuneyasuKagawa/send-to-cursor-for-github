@@ -31,6 +31,29 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
       .trim();
   };
 
+  const HEADING_RE = /^#{1,6}\s/;
+
+  /**
+   * 中身が空になった見出しを削除する。
+   * 「## 対象ファイル」のように、値が取れなかった行だけで構成されていたセクションは
+   * 見出しだけが取り残されるため、後ろから走査してまとめて落とす。
+   */
+  function dropEmptySections(lines) {
+    const result = [...lines];
+    for (let i = result.length - 1; i >= 0; i -= 1) {
+      if (!HEADING_RE.test(result[i])) continue;
+
+      let end = i + 1;
+      while (end < result.length && !HEADING_RE.test(result[end])) {
+        if (result[end].trim() !== '') break;
+        end += 1;
+      }
+      const isEmpty = end === result.length || HEADING_RE.test(result[end]);
+      if (isEmpty) result.splice(i, end - i);
+    }
+    return result;
+  }
+
   /**
    * テンプレートを展開する。
    * 値が空のプレースホルダーを含む行はまるごと削除するので、
@@ -48,7 +71,7 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
           return value !== undefined && value !== null && String(value).trim() !== '';
         });
       });
-    return kept
+    return dropEmptySections(kept)
       .join('\n')
       .replace(placeholder, (_match, name) => {
         const value = values[name];
@@ -62,25 +85,29 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
     return `${base}?text=${encodeURIComponent(prompt)}`;
   };
 
-  const TRUNCATION_NOTE = '\n\n…(コメント本文が長いため以降を省略しました)';
+  const TRUNCATION_NOTE = '\n\n…(本文が長いため以降を省略しました)';
 
   /**
-   * 8,000 文字制限に収まるまでコメント本文だけを縮める。
+   * 8,000 文字制限に収まるまで本文だけを縮める。
    * 本文以外（ブランチ名や依頼内容）は必ず残るようにするため、二分探索で本文長を決める。
+   *
+   * bodyKey は本文を差し込むプレースホルダー名。対象によって {{commentBody}} /
+   * {{issueBody}} / {{failureOutput}} などに変わる。
    */
-  ns.buildDeeplinkForComment = function buildDeeplinkForComment({
+  ns.buildPromptDeeplink = function buildPromptDeeplink({
     template,
     values,
     body,
+    bodyKey = 'commentBody',
     linkMode,
     urlLimit = ns.URL_LIMIT || 8000,
   }) {
-    const build = (bodyText) =>
-      ns.buildDeeplink(ns.renderTemplate(template, { ...values, commentBody: bodyText }), linkMode);
+    const render = (bodyText) => ns.renderTemplate(template, { ...values, [bodyKey]: bodyText });
+    const build = (bodyText) => ns.buildDeeplink(render(bodyText), linkMode);
 
     const full = build(body);
     if (full.length <= urlLimit) {
-      return { url: full, prompt: ns.renderTemplate(template, { ...values, commentBody: body }), truncated: false };
+      return { url: full, prompt: render(body), truncated: false };
     }
 
     let low = 0;
@@ -94,10 +121,6 @@ var GHCursorLink = globalThis.GHCursorLink || (globalThis.GHCursorLink = {});
       }
     }
     const truncatedBody = body.slice(0, low) + TRUNCATION_NOTE;
-    return {
-      url: build(truncatedBody),
-      prompt: ns.renderTemplate(template, { ...values, commentBody: truncatedBody }),
-      truncated: true,
-    };
+    return { url: build(truncatedBody), prompt: render(truncatedBody), truncated: true };
   };
 })(GHCursorLink);

@@ -1,0 +1,135 @@
+<!--
+  Issue ページのタイムラインの DOM を再現したフィクスチャ。
+  1 件目（id="issue-<番号>"）が Issue 本文、2 件目がコメントで、
+  それぞれ別のテンプレートが使われる。
+
+  抽出処理が依存している要素:
+    - id="issue-<番号>"                                本文かコメントかの判定
+    - .timeline-comment-actions clipboard-copy[value]  Markdown 原文
+    - .author / a.js-timestamp                         投稿者 / permalink
+    - .comment-reactions > reactions-menu              ボタンの挿入位置
+-->
+<div
+  id="issue-2222222222"
+  class="timeline-comment-group js-minimizable-comment-group js-targetable-element comment previewable-edit js-task-list-container js-comment unminimized-comment"
+>
+  <div class="ml-n1 flex-items-center clearfix d-flex flex-row flex-items-start">
+    <h3 class="f5 text-normal py-2" style="flex: 1 1 auto">
+      <div class="d-flex flex-items-center flex-wrap gap-1">
+        <strong><a class="author Link--primary text-bold" href="/hubot">hubot</a></strong>
+        <a
+          href="#issue-2222222222"
+          id="issue-2222222222-permalink"
+          class="Link--secondary js-timestamp"
+          ><relative-time datetime="2026-01-02T04:30:00Z" class="no-wrap">Jan 2, 2026</relative-time></a
+        >
+      </div>
+    </h3>
+
+    <div class="d-flex flex-row-reverse flex-items-center flex-shrink-0 tmp-pl-3">
+      <div class="timeline-comment-actions flex-shrink-0 d-flex flex-items-center">
+        <details class="details-overlay details-reset position-relative d-inline-block">
+          <summary class="timeline-comment-action Link--secondary Button--link Button--medium Button" role="button">…</summary>
+          <details-menu class="dropdown-menu dropdown-menu-sw show-more-popover">
+            <span>
+              <clipboard-copy
+                role="menuitem"
+                class="dropdown-item btn-link"
+                value="`GET /items` returns every item at once, so the list screen slows down once a workspace has a few thousand items.
+
+### Expected
+- accept `page` and `per_page`
+- return the total count in a header so the client can render the pager
+
+### Notes
+The existing `listItems` handler has no place to put the total count yet."
+                >Copy Markdown</clipboard-copy
+              >
+            </span>
+          </details-menu>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="edit-comment-hide">
+    <div class="comment-body markdown-body js-comment-body soft-wrap user-select-contain d-block">
+      <p><code>GET /items</code> returns every item at once.</p>
+    </div>
+  </div>
+
+  <div class="tmp-ml-5 edit-comment-hide">
+    <div
+      class="comment-reactions just-bottom js-reactions-container js-reaction-buttons-container social-reactions reactions-container d-flex"
+    >
+      <reactions-menu tabindex="-1">
+        <details class="dropdown details-reset details-overlay d-inline-block new-reactions-dropdown">
+          <summary aria-label="Add or remove reactions" class="circle reaction-dropdown-button btn-invisible btn p-0 mr-1 d-flex flex-justify-center flex-items-center border">
+            <svg height="18" width="18" viewBox="0 0 16 16" aria-hidden="true" class="octicon octicon-smiley social-button-emoji">
+              <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
+            </svg>
+          </summary>
+        </details>
+      </reactions-menu>
+    </div>
+  </div>
+</div>
+
+<div
+  id="issuecomment-3333333333"
+  class="timeline-comment-group js-minimizable-comment-group js-targetable-element comment previewable-edit js-task-list-container js-comment unminimized-comment"
+>
+  <div class="ml-n1 flex-items-center clearfix d-flex flex-row flex-items-start">
+    <h3 class="f5 text-normal py-2" style="flex: 1 1 auto">
+      <div class="d-flex flex-items-center flex-wrap gap-1">
+        <strong><a class="author Link--primary text-bold" href="/octocat">octocat</a></strong>
+        <a
+          href="#issuecomment-3333333333"
+          id="issuecomment-3333333333-permalink"
+          class="Link--secondary js-timestamp"
+          ><relative-time datetime="2026-01-03T01:15:00Z" class="no-wrap">Jan 3, 2026</relative-time></a
+        >
+      </div>
+    </h3>
+
+    <div class="d-flex flex-row-reverse flex-items-center flex-shrink-0 tmp-pl-3">
+      <div class="timeline-comment-actions flex-shrink-0 d-flex flex-items-center">
+        <details class="details-overlay details-reset position-relative d-inline-block">
+          <summary class="timeline-comment-action Link--secondary Button--link Button--medium Button" role="button">…</summary>
+          <details-menu class="dropdown-menu dropdown-menu-sw show-more-popover">
+            <span>
+              <clipboard-copy
+                role="menuitem"
+                class="dropdown-item btn-link"
+                value="Keyset pagination would fit better here. The list is always sorted by `created_at`, so an offset would drift while items are being added."
+                >Copy Markdown</clipboard-copy
+              >
+            </span>
+          </details-menu>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="edit-comment-hide">
+    <div class="comment-body markdown-body js-comment-body soft-wrap user-select-contain d-block">
+      <p>Keyset pagination would fit better here.</p>
+    </div>
+  </div>
+
+  <div class="tmp-ml-5 edit-comment-hide">
+    <div
+      class="comment-reactions just-bottom js-reactions-container js-reaction-buttons-container social-reactions reactions-container d-flex"
+    >
+      <reactions-menu tabindex="-1">
+        <details class="dropdown details-reset details-overlay d-inline-block new-reactions-dropdown">
+          <summary aria-label="Add or remove reactions" class="circle reaction-dropdown-button btn-invisible btn p-0 mr-1 d-flex flex-justify-center flex-items-center border">
+            <svg height="18" width="18" viewBox="0 0 16 16" aria-hidden="true" class="octicon octicon-smiley social-button-emoji">
+              <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
+            </svg>
+          </summary>
+        </details>
+      </reactions-menu>
+    </div>
+  </div>
+</div>

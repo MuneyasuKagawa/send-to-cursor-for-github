@@ -77,6 +77,53 @@ label.checkbox small {
   opacity: 0.75;
 }
 
+section.target {
+  margin: 0 0 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+section.target label.checkbox {
+  padding: 0;
+}
+
+section.target details {
+  margin-top: 10px;
+}
+
+section.target summary {
+  padding: 4px 0;
+  font-size: 12px;
+  opacity: 0.85;
+  cursor: pointer;
+}
+
+section.target details .hint {
+  margin-top: 8px;
+}
+
+/* クリックで挿入するボタンだが、意味はコード片なので見た目は code に寄せる */
+button.placeholder {
+  padding: 1px 5px;
+  border-color: transparent;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+button.placeholder:hover {
+  border-color: var(--border);
+  background: color-mix(in srgb, currentColor 20%, transparent);
+}
+
+section.target textarea {
+  margin-bottom: 8px;
+}
+
 textarea,
 input[type='text'] {
   width: 100%;
@@ -107,6 +154,16 @@ textarea {
   border-top: 1px solid var(--border);
 }
 
+/* 長いエラー文が入っても、ボタンと注記は縮めずに折り返しはエラー側で受ける */
+.actions button,
+.actions .hint {
+  flex: none;
+}
+
+.actions .hint {
+  margin: 0;
+}
+
 button {
   padding: 7px 16px;
   border: 1px solid var(--border);
@@ -118,14 +175,12 @@ button {
   cursor: pointer;
 }
 
-button.primary {
-  background: #0969da;
-  border-color: #0969da;
-  color: #fff;
-  font-weight: 600;
-}
-
 #status {
   font-size: 12px;
   opacity: 0.8;
+}
+
+#status.error {
+  color: light-dark(#cf222e, #ff8182);
+  opacity: 1;
 }

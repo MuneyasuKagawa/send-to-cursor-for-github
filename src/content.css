@@ -26,6 +26,27 @@
   vertical-align: middle;
 }
 
+/* PR ヘッダーは GitHub 製の小さいボタン (28px) が並ぶ列なので、そちらに合わせる */
+.ghcl-button--header {
+  height: 28px;
+  padding: 0 12px;
+  margin: 0 0 0 8px;
+}
+
+/* チェック一覧は 1 行が詰まっているので、行の高さを押し広げない大きさにする */
+.ghcl-button--check {
+  height: 22px;
+  padding: 0 8px;
+  margin: 0 0 0 8px;
+  font-size: 11px;
+}
+
+/* アイコンのみのときは高さと同じ 26px 幅の円にする（12px のアイコン + 左右 6px + 枠線 2px） */
+.ghcl-button--icon-only {
+  justify-content: center;
+  padding: 0 6px;
+}
+
 /* 絵文字リアクションボタン側に右マージン 4px があるので、その直後では左マージンを打ち消す */
 reactions-menu + .ghcl-button {
   margin-left: 0;

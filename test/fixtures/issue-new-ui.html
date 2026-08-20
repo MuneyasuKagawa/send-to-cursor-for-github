@@ -1,0 +1,173 @@
+<!--
+  React 製の新しい Issue ページの DOM を再現したフィクスチャ。
+  react/react の実際の Issue を調べて、抽出処理が参照する要素だけを残した架空の内容。
+
+  旧 UI との違いで、抽出処理が対応しないといけない点:
+    - Rails 版のクラス（.js-comment / reactions-menu / .js-comment-body など）が一切無い
+    - 本文は [data-testid="issue-body"]、コメントは
+      [data-testid="comment-viewer-outer-box-<GraphQL のノード ID>"]
+    - 「Copy Markdown」が React のメニュー項目になり、DOM から原文が読めない。
+      代わりに埋め込みデータ（下部の script）が本文とコメントの原文を持つ。
+    - ボタンの挿入先になる絵文字リアクションは
+      button[class*="ReactionViewerAnchor-module__ReactionViewerAnchorButton"]
+
+  クラス名の末尾のハッシュは CSS モジュールの生成物で、GitHub のデプロイごとに変わる。
+-->
+
+<div data-testid="issue-body" class="react-issue-body IssueBody-module__innerContainer__yRKH5">
+  <div class="IssueBodyHeader-module__titleSection__dX9cz">
+    <a
+      data-testid="issue-body-header-author"
+      class="IssueBodyHeaderAuthor-module__authorLoginLink__aTls_"
+      href="/octocat"
+      >octocat</a
+    >
+  </div>
+  <div class="ActivityHeader-module__footer__HD8mP">
+    <span>opened</span>
+    <a
+      data-testid="issue-body-header-link"
+      class="IssueBodyHeader-module__dateLink__kYTxQ"
+      href="/octocat/hello-world/issues/7#issue-5085891842"
+      ><relative-time datetime="2026-08-18T09:00:00Z">on Aug 18, 2026</relative-time></a
+    >
+  </div>
+
+  <div data-testid="issue-body-viewer" class="IssueBodyViewer-module__IssueBody__xbjV0">
+    <div data-testid="markdown-body" class="markdown-body">
+      <div class="markdown-body NewMarkdownViewer-module__safe-html-box__ZT1eD">
+        <h3>What happened</h3>
+        <p>
+          <code>GET /items</code> がすべての件数を返すため、件数が増えるとレスポンスが大きくなりすぎます。
+        </p>
+      </div>
+    </div>
+    <!-- 絵文字リアクションは初期 HTML に無く、後から React が行の末尾へ足す -->
+    <div class="d-flex gap-1 flex-wrap" data-deferred-reactions="👍 3,🎉 1">
+      <button type="button" class="prc-Button-ButtonBase-9n-Xk ReactionViewerAnchor-module__ReactionViewerAnchorButton__TujhO">
+        <svg height="16" viewBox="0 0 16 16" width="16" class="octicon octicon-smiley">
+          <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
+        </svg>
+      </button>
+      <span class="prc-TooltipV2-Tooltip-tLeuB">React</span>
+    </div>
+  </div>
+</div>
+
+<div data-testid="issue-viewer-comments-container">
+  <!-- 1 件目: 埋め込みデータに原文がある -->
+  <div data-testid="comment-viewer-outer-box-IC_kwDOAAAAAAAAAAABAAAAAA">
+    <div data-testid="comment-header" class="ActivityHeader-module__ActivityHeaderContainer__BnNwC">
+      <div data-testid="comment-header-left-side-items">
+        <a data-testid="avatar-link" href="/hubot">hubot</a>
+        <a
+          class="ActivityHeader-module__dateLink__uHZ8k"
+          href="/octocat/hello-world/issues/7#issuecomment-5296126755"
+          ><relative-time datetime="2026-08-18T10:00:00Z">on Aug 18, 2026</relative-time></a
+        >
+      </div>
+      <div data-testid="comment-header-right-side-items">
+        <button data-testid="comment-header-hamburger" type="button" class="prc-Button-ButtonBase-9n-Xk">
+          <svg height="16" viewBox="0 0 16 16" width="16" class="octicon octicon-kebab-horizontal">
+            <path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="IssueCommentViewer-module__IssueCommentBody__IXu9t">
+      <div data-testid="markdown-body" class="markdown-body">
+        <div class="markdown-body NewMarkdownViewer-module__safe-html-box__ZT1eD">
+          <h3>Proposed plan</h3>
+          <p>カーソルベースのページネーションを入れるのが良いと思います。</p>
+        </div>
+      </div>
+      <div class="d-flex gap-1 flex-wrap" data-deferred-reactions="👍 2">
+        <button type="button" class="prc-Button-ButtonBase-9n-Xk ReactionViewerAnchor-module__ReactionViewerAnchorButton__TujhO">
+          <svg height="16" viewBox="0 0 16 16" width="16" class="octicon octicon-smiley">
+            <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
+          </svg>
+        </button>
+        <span class="prc-TooltipV2-Tooltip-tLeuB">React</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 件目: 後から読み込まれた想定で、埋め込みデータに原文が無い -->
+  <div data-testid="comment-viewer-outer-box-IC_kwDOAAAAAAAAAAABBBBBBB">
+    <div data-testid="comment-header" class="ActivityHeader-module__ActivityHeaderContainer__BnNwC">
+      <div data-testid="comment-header-left-side-items">
+        <a data-testid="avatar-link" href="/octocat">octocat</a>
+        <a
+          class="ActivityHeader-module__dateLink__uHZ8k"
+          href="/octocat/hello-world/issues/7#issuecomment-5296352857"
+          ><relative-time datetime="2026-08-18T11:00:00Z">on Aug 18, 2026</relative-time></a
+        >
+      </div>
+      <div data-testid="comment-header-right-side-items">
+        <button data-testid="comment-header-hamburger" type="button" class="prc-Button-ButtonBase-9n-Xk">
+          <svg height="16" viewBox="0 0 16 16" width="16" class="octicon octicon-kebab-horizontal">
+            <path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="IssueCommentViewer-module__IssueCommentBody__IXu9t">
+      <div data-testid="markdown-body" class="markdown-body">
+        <div class="markdown-body NewMarkdownViewer-module__safe-html-box__ZT1eD">
+          <p>後から読み込まれたコメントなので、埋め込みデータには入っていません。</p>
+        </div>
+      </div>
+      <div class="d-flex gap-1">
+        <button type="button" class="prc-Button-ButtonBase-9n-Xk ReactionViewerAnchor-module__ReactionViewerAnchorButton__TujhO">
+          <svg height="16" viewBox="0 0 16 16" width="16" class="octicon octicon-smiley">
+            <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
+          </svg>
+        </button>
+        <span class="prc-TooltipV2-Tooltip-tLeuB">React</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  ページに埋め込まれた GraphQL のプリロード結果。
+  本文と 1 件目のコメントの Markdown 原文を持つ（2 件目は意図的に含めていない）。
+  タイムラインには body を持たないイベントも混ざるので、それも再現している。
+-->
+<script type="application/json" data-target="react-app.embeddedData">
+{
+  "payload": {
+    "preloadedQueries": [
+      {
+        "result": {
+          "data": {
+            "repository": {
+              "issue": {
+                "id": "I_kwDOAAAAAAAAAAABZZZZZZ",
+                "number": 7,
+                "url": "https://github.com/octocat/hello-world/issues/7",
+                "author": { "login": "octocat" },
+                "body": "### What happened\n\n`GET /items` \u304c\u3059\u3079\u3066\u306e\u4ef6\u6570\u3092\u8fd4\u3059\u305f\u3081\u3001\u4ef6\u6570\u304c\u5897\u3048\u308b\u3068\u30ec\u30b9\u30dd\u30f3\u30b9\u304c\u5927\u304d\u304f\u306a\u308a\u3059\u304e\u307e\u3059\u3002\n\n```json\n{ \"items\": [] }\n```",
+                "frontTimelineItems": {
+                  "edges": [
+                    { "node": { "__typename": "LabeledEvent", "id": "LE_kwDOAAAAAAAAAAABCCCCCC" } },
+                    {
+                      "node": {
+                        "__typename": "IssueComment",
+                        "id": "IC_kwDOAAAAAAAAAAABAAAAAA",
+                        "url": "https://github.com/octocat/hello-world/issues/7#issuecomment-5296126755",
+                        "author": { "login": "hubot" },
+                        "body": "### Proposed plan\n\n\u30ab\u30fc\u30bd\u30eb\u30d9\u30fc\u30b9\u306e\u30d1\u30b8\u30cd\u30fc\u30b7\u30e7\u30f3\u3092\u5165\u308c\u308b\u306e\u304c\u826f\u3044\u3068\u601d\u3044\u307e\u3059\u3002\n\n```go\ntype cursor struct {\n\tAfter string\n}\n```"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+</script>

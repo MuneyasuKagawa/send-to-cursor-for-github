@@ -23,6 +23,17 @@
         display: flex;
         align-items: center;
       }
+      .flex-auto {
+        flex: 1 1 auto;
+      }
+      .gh-header-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .merge-status-item {
+        padding: 4px 0;
+      }
       .diff-table {
         font-family: ui-monospace, monospace;
         border-collapse: collapse;
@@ -45,42 +56,230 @@
   </head>
   <body>
     <div class="harness-note">
-      拡張機能のロジック検証用ページ。<code>test/fixtures/review-thread.html</code> を読み込み、
-      content script と同じ処理を実行する。
+      拡張機能のロジック検証用ページ。URL が <code>/pull/</code> か <code>/issues/</code> かで
+      読み込むフィクスチャを切り替え、content script と同じ処理を実行する。
     </div>
 
-    <!-- PR ヘッダー相当（ブランチ抽出の確認用） -->
-    <div>
-      <span class="commit-ref user-select-contain">
-        <span class="base-ref">
-          <span class="css-truncate-target user">octocat</span>:<span class="css-truncate-target"
-            >main</span
+    <!-- PR ページのヘッダー相当（タイトル / ブランチ / 「PR 全体」ボタンの挿入先） -->
+    <template id="chrome-pull">
+      <div class="gh-header">
+        <div class="gh-header-show d-flex">
+          <h1 class="flex-auto">
+            <bdi class="js-issue-title markdown-title">Add list items endpoint</bdi>
+            <span class="f1-light color-fg-muted">#42</span>
+          </h1>
+          <div class="gh-header-actions">
+            <a class="btn btn-sm" href="#">Edit</a>
+          </div>
+        </div>
+        <div class="gh-header-meta">
+          <a class="author Link--secondary text-bold" href="/octocat">octocat</a>
+          wants to merge 3 commits into
+          <span class="commit-ref user-select-contain">
+            <span class="base-ref">
+              <span class="css-truncate-target user">octocat</span>:<span class="css-truncate-target">main</span>
+            </span>
+          </span>
+          from
+          <span class="commit-ref user-select-contain width-fit">
+            <span class="css-truncate css-truncate-target width-fit">feature/add-list-endpoint</span>
+          </span>
+        </div>
+      </div>
+    </template>
+
+    <!--
+      Primer React 製の新しい PR ヘッダー相当。
+      旧 UI の .gh-header-* / .commit-ref は存在せず、ブランチは href からしか正確に取れない。
+    -->
+    <template id="chrome-pull-new">
+      <div data-component="PageHeader" class="prc-PageHeader-PageHeader-YLwBQ">
+        <div data-component="TitleArea" class="prc-PageHeader-TitleArea-2n2J0">
+          <h1 data-component="PH_Title" class="prc-PageHeader-Title-p0Mgh">
+            <span data-component="Text" class="f1 text-normal markdown-title">Add list items endpoint</span>
+            <span class="sr-only"> - #42</span>
+          </h1>
+        </div>
+        <div data-component="PH_Actions" class="prc-PageHeader-Actions-wawWm d-flex">
+          <div class="d-flex gap-2">
+            <button type="button" class="prc-Button-ButtonBase-9n-Xk">View status</button>
+            <button type="button" class="prc-Button-ButtonBase-9n-Xk">Code</button>
+          </div>
+        </div>
+        <div data-component="PageHeader.Description" class="prc-PageHeader-Description-w-ejP">
+          <div class="fgColor-muted d-flex flex-items-center">
+            <a class="text-bold" data-component="Link" href="/octocat">octocat</a>
+            wants to merge 3 commits into
+            <div class="d-flex flex-items-center gap-1">
+              <a
+                href="/octocat/hello-world/tree/main"
+                class="prc-BranchName-BranchName-CMTaU"
+                data-component="BranchName"
+                >octocat:main</a
+              >
+            </div>
+            from
+            <div class="d-flex flex-items-center gap-1">
+              <a
+                href="/octocat/hello-world/tree/feature/add-list-endpoint"
+                class="prc-BranchName-BranchName-CMTaU"
+                data-component="BranchName"
+                >feature/add-list-endpoint</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Issue ページのヘッダー相当（タイトル / ラベル） -->
+    <template id="chrome-issue">
+      <div class="gh-header">
+        <h1>
+          <bdi class="js-issue-title markdown-title">Support pagination for the items endpoint</bdi>
+          <span class="f1-light color-fg-muted">#7</span>
+        </h1>
+        <div class="js-issue-labels d-flex">
+          <a href="#" class="IssueLabel">enhancement</a>
+          <a href="#" class="IssueLabel">api</a>
+        </div>
+      </div>
+    </template>
+
+    <!--
+      React 製の新しい Issue ヘッダー相当。
+      ラベルはリンクの中に説明文を .sr-only で持つので、そのまま読むとラベル名に続いてしまう。
+    -->
+    <template id="chrome-issue-new">
+      <div data-testid="issue-header">
+        <h1 data-component="PH_Title" class="prc-PageHeader-Title-p0Mgh">
+          <bdi data-testid="issue-title" class="markdown-title HeaderViewer-module__issueTitle__DW72_"
+            >Support pagination for the items endpoint</bdi
           >
-        </span>
-      </span>
-      <span class="commit-ref user-select-contain width-fit">
-        <span class="css-truncate css-truncate-target width-fit">feature/add-list-endpoint</span>
-      </span>
-    </div>
+          <span class="f1-light fgColor-muted">#7</span>
+        </h1>
+        <div data-testid="issue-labels" class="LabelsList-module__labelsListContainer__q43kf">
+          <a class="LabelsList-module__labelLink__puy8d" href="#">
+            <span class="prc-Token-IssueLabel-2IazM">
+              <span class="prc-Token-TokenTextContainer-cOUaD"><span>enhancement</span></span>
+            </span>
+            <span class="sr-only">New feature or request</span>
+          </a>
+          <a class="LabelsList-module__labelLink__puy8d" href="#">
+            <span class="prc-Token-IssueLabel-2IazM">
+              <span class="prc-Token-TokenTextContainer-cOUaD"><span>api</span></span>
+            </span>
+            <span class="sr-only">Changes to the public API</span>
+          </a>
+        </div>
+      </div>
+    </template>
 
+    <div id="chrome"></div>
     <div id="fixture"></div>
     <div id="report"></div>
 
     <script>
-      // content script が使う chrome.storage の最小限のスタブ（既定値をそのまま返す）
+      // content script が使う chrome.storage の最小限のスタブ。
+      // ?off=prComment,ciFailure のように渡すと、対象を無効にした状態を再現できる。
+      const disabled = new URLSearchParams(location.search).get('off') || '';
+      const enabledTargets = {};
+      for (const id of disabled.split(',').filter(Boolean)) enabledTargets[id] = false;
       window.chrome = {
         storage: {
-          sync: { get: async (defaults) => defaults },
+          sync: { get: async () => ({ enabledTargets }) },
           onChanged: { addListener() {} },
         },
       };
     </script>
     <script>
+      /**
+       * 新 UI の "..." メニューの遅延読み込みを再現する。
+       * 本物は details-menu[preload] がホバー時に include-fragment を差し替えるので、
+       * ここでは data-deferred-markdown の内容で Copy Markdown を作って同じ形にする。
+       */
+      function stubDeferredMenus() {
+        for (const fragment of document.querySelectorAll('include-fragment[data-deferred-markdown]')) {
+          const menu = fragment.closest('details-menu');
+          const summary = menu.closest('details').querySelector('summary');
+          const load = () => {
+            summary.removeEventListener('mouseover', load);
+            summary.removeEventListener('focusin', load);
+            setTimeout(() => {
+              const copy = document.createElement('clipboard-copy');
+              copy.className = 'dropdown-item btn-link';
+              copy.setAttribute('role', 'menuitem');
+              copy.setAttribute('value', fragment.getAttribute('data-deferred-markdown'));
+              copy.textContent = 'Copy Markdown';
+              fragment.replaceWith(copy);
+            }, 50);
+          };
+          summary.addEventListener('mouseover', load);
+          summary.addEventListener('focusin', load);
+        }
+      }
+    </script>
+    <script>
+      /**
+       * 絵文字リアクションの遅延描画を再現する。
+       * 実機のサーバー HTML にはリアクション追加ボタンだけがあり、絵文字は後から
+       * React が行の末尾へ足す。ボタンが絵文字の手前に取り残されないかを見るため。
+       */
+      function stubDeferredReactions(delayMs = 100) {
+        for (const row of document.querySelectorAll('[data-deferred-reactions]')) {
+          const emojis = row.getAttribute('data-deferred-reactions').split(',');
+          setTimeout(() => {
+            for (const emoji of emojis) {
+              const pill = document.createElement('button');
+              pill.type = 'button';
+              pill.className =
+                'prc-Button-ButtonBase-9n-Xk ReactionButton-module__reactionToggleButton__hyALB';
+              pill.textContent = emoji;
+              row.append(pill, Object.assign(document.createElement('span'), {
+                className: 'prc-TooltipV2-Tooltip-tLeuB',
+                textContent: 'octocat reacted with this',
+              }));
+            }
+          }, delayMs);
+        }
+      }
+    </script>
+    <script>
       (async () => {
         const report = document.getElementById('report');
+        const isIssue = /\/issues\/\d+/.test(location.pathname);
+        // ?ui=new で React 製の新しいページを再現する
+        const isNewUi = new URLSearchParams(location.search).get('ui') === 'new';
+        const fixtures = isIssue
+          ? [isNewUi ? 'issue-new-ui.html' : 'issue.html']
+          : isNewUi
+            ? ['pr-new-ui.html']
+            : ['pr-body.html', 'review-thread.html', 'pr-checks.html'];
+
         try {
-          const html = await (await fetch('/test/fixtures/review-thread.html')).text();
-          document.getElementById('fixture').innerHTML = html;
+          if (isIssue) {
+            document.title =
+              'Support pagination for the items endpoint · Issue #7 · octocat/hello-world · GitHub';
+          }
+          const chromeId = isIssue
+            ? isNewUi
+              ? 'chrome-issue-new'
+              : 'chrome-issue'
+            : isNewUi
+              ? 'chrome-pull-new'
+              : 'chrome-pull';
+          document
+            .getElementById('chrome')
+            .append(document.getElementById(chromeId).content.cloneNode(true));
+
+          const host = document.getElementById('fixture');
+          for (const name of fixtures) {
+            const holder = document.createElement('div');
+            holder.innerHTML = await (await fetch(`/test/fixtures/${name}`)).text();
+            host.append(holder);
+          }
+          stubDeferredMenus();
+          stubDeferredReactions();
 
           for (const src of [
             '/src/config.js',
@@ -100,12 +299,37 @@
           // content script は document_idle 相当で自走するので、挿入完了を待って結果を出す
           await new Promise((resolve) => setTimeout(resolve, 400));
           const buttons = [...document.querySelectorAll('.ghcl-button')];
+          const promptOf = (button) => decodeURIComponent(button.href.split('?text=')[1] || '');
+          const before = buttons.map(promptOf);
+
+          // Markdown 原文の遅延読み込みは、ボタンにマウスが乗った時点で走る
+          for (const button of buttons) {
+            button.dispatchEvent(new MouseEvent('mouseenter'));
+          }
+          await new Promise((resolve) => setTimeout(resolve, 400));
+
           report.textContent = [
-            `PR context: ${JSON.stringify(GHCursorLink.getPullRequestContext(), null, 2)}`,
+            `fixtures: ${fixtures.join(', ')}`,
+            `page context: ${JSON.stringify(GHCursorLink.getPageContext(), null, 2)}`,
             `buttons: ${buttons.length}`,
             ...buttons.map((button, index) => {
-              const prompt = decodeURIComponent(button.href.split('?text=')[1] || '');
-              return `\n--- button #${index + 1} (url ${button.href.length} chars) ---\n${prompt}`;
+              const prompt = promptOf(button);
+              const kind = button.title.split('\n')[0];
+              const upgraded = prompt === before[index] ? '' : ' / ホバーで Markdown 原文に差し替え済み';
+              const row = button.parentElement;
+              const siblings = [...row.children]
+                .map((child) =>
+                  child === button
+                    ? '[ボタン]'
+                    : child.textContent.replace(/\s+/g, '').slice(0, 6) ||
+                      child.tagName.toLowerCase(),
+                )
+                .join(' ');
+              return [
+                `\n--- button #${index + 1} [${kind}] (url ${button.href.length} chars${upgraded}) ---`,
+                `挿入先: ${row.className || row.tagName} → ${siblings}`,
+                prompt,
+              ].join('\n');
             }),
           ].join('\n');
         } catch (error) {
