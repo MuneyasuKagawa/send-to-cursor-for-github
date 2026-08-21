@@ -38,6 +38,21 @@ GitHub の PR と Issue に、その内容を渡すプロンプト付きで Curs
 for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$s.png; done
 ```
 
+## ストアに公開する
+
+提出物の置き場所と、ダッシュボードに入れる文言は [docs/store-listing.md](docs/store-listing.md) にまとめてあります。プライバシーポリシーは [docs/privacy-policy.md](docs/privacy-policy.md)（[English](docs/privacy-policy.en.md)）です。
+
+```bash
+python3 tools/package.py       # dist/ に提出用の ZIP を作る
+python3 tools/shoot_options.py # 設定ページのスクリーンショットを 1280x800 で撮り直す
+```
+
+`tools/package.py` は拡張が読み込むファイルだけを詰めます（`test/` と `tools/`、`icons/icon.svg` は入りません）。詰める前に、`manifest.json` と `src/options.html` が参照しているファイルが揃っているか、`manifest.json` の `__MSG_*__` が `_locales` の全言語にあるかを確認します。参照の抜けは読み込んで動かすまで気づけないためです。
+
+`tools/shoot_options.py` は、設定ページの `<head>` に `chrome.storage.sync` の代わりを差し込んだ一時ページを作り、ヘッドレスの Chrome に 1280x800 で開かせます（ストアのスクリーンショットは 1280x800 か 640x400 のみ）。`--screenshot` は書き出したあとも終了しないことがあるので、ファイルの大きさが落ち着いたら自分で止めています。
+
+GitHub 上のボタンを写した画像だけは手で撮る必要があります。ボタンは GitHub がログイン中だけ表示する領域に入るためです。撮り方は [docs/store-listing.md](docs/store-listing.md) に書いてあります。
+
 ## 設定
 
 インストールした直後に設定ページが自動で開きます。あとから開くときは、ツールバーの拡張機能アイコン（ピン留めしていない場合はパズルピースのメニュー内にある拡張機能名）をクリックします。`chrome://extensions` の拡張機能詳細にある「拡張機能のオプション」からも開けます。
