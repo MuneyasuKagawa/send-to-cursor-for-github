@@ -1,6 +1,12 @@
 .DS_Store
 __pycache__/
 
+# tools/package.py が作るストア提出用の ZIP
+dist/
+
+# tools/shoot_options.py が撮影中だけ置く一時ページ（途中で落ちたときの取り残し用）
+_shot.html
+
 # 実際の PR ページを保存した HTML はコミットしない。
 # コードやレビュー内容、CSRF トークン、アバター URL などがそのまま含まれる。
 sample_*.html

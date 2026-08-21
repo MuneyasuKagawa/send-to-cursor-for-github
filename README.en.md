@@ -38,6 +38,21 @@ The icon PNGs are generated from `icons/icon.svg` and committed, so you normally
 for s in 16 32 48 128; do rsvg-convert -w $s -h $s icons/icon.svg -o icons/icon$s.png; done
 ```
 
+## Publishing to the store
+
+Where the submission assets live and what to put in each dashboard field is collected in [docs/store-listing.md](docs/store-listing.md) (written in Japanese). The privacy policy is [docs/privacy-policy.en.md](docs/privacy-policy.en.md) ([日本語](docs/privacy-policy.md)).
+
+```bash
+python3 tools/package.py       # build the submission ZIP into dist/
+python3 tools/shoot_options.py # retake the options page screenshots at 1280x800
+```
+
+`tools/package.py` packs only the files the extension loads (`test/`, `tools/`, and `icons/icon.svg` stay out). Before packing it checks that every file referenced by `manifest.json` and `src/options.html` is included, and that each `__MSG_*__` in `manifest.json` exists in every locale under `_locales`, because a missing reference only shows up once the extension is loaded and running.
+
+`tools/shoot_options.py` builds a temporary page with a stand-in for `chrome.storage.sync` injected into the options page's `<head>`, then has headless Chrome open it at 1280x800 (store screenshots may only be 1280x800 or 640x400). `--screenshot` sometimes does not exit after writing the file, so the script stops Chrome itself once the file size settles.
+
+The screenshots showing the button on GitHub are taken by hand. The header button only appears while you are signed in to GitHub (signed out, GitHub keeps the header action row hidden and that one placement is skipped), so a signed-in browser is needed. The steps are in [docs/store-listing.md](docs/store-listing.md).
+
 ## Settings
 
 The options page opens automatically right after you install the extension. To open it later, click the extension icon in the toolbar (if you have not pinned it, the extension name inside the puzzle-piece menu). It can also be opened from "Extension options" on the extension's detail page in `chrome://extensions`.
