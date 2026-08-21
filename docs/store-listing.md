@@ -17,16 +17,28 @@
 
 スクリーンショットは 1280x800 か 640x400 のみ。余白やダミーの枠を足さず、そのままの大きさで出す。
 
-`store-assets/screenshots/` には次の 6 枚がある。掲載するのは 1 ロケールあたり 3 枚で、先頭がいちばん見られるので GitHub 上のボタンを前に置く。
+`store-assets/screenshots/` には次の 6 枚がある。
 
-| ファイル | 中身 | 掲載 |
-| -------- | ---- | ---- |
-| `github-1-pr-header.png` | PR ヘッダーに出るボタン | 1 枚目（言語共通） |
-| `github-2-pr-comment.png` | レビューコメントに出るボタン | 2 枚目（言語共通） |
-| `options-prompt-ja.png` / `options-prompt-en.png` | プロンプトを編集する画面 | 3 枚目（ロケールごと） |
-| `options-general-ja.png` / `options-general-en.png` | 一般設定の画面 | 予備（差し替え用） |
+| ファイル | 中身 |
+| -------- | ---- |
+| `github-1-pr-header.png` | PR ヘッダーに出るボタン |
+| `github-2-pr-comment.png` | レビューコメントに出るボタン |
+| `options-prompt-ja.png` / `options-prompt-en.png` | プロンプトを編集する画面 |
+| `options-general-ja.png` / `options-general-en.png` | 一般設定の画面（差し替え用の予備） |
 
-GitHub の 2 枚はボタンのラベルが `Cursor` で日英とも同じなので、ロケールごとに分ける必要がない。設定ページの画像だけロケールごとに入れ替える。
+GitHub の 2 枚はボタンのラベルが `Cursor` で日英とも同じなので、ロケールごとに分ける必要がない。設定ページの画像だけロケールごとに入れ替える。先頭がいちばん見られるので、GitHub 上のボタンを前に置く。
+
+### ローカライズ版アセットと全言語向けアセット
+
+掲載欄は「ローカライズ版アセット」と「全言語向けアセット」に分かれている。スクリーンショットはどちらの欄も 1 枚以上・最大 5 枚が必須（ダッシュボードの両方に `*` が付く）。ローカライズできるのは詳細な説明・スクリーンショット・プロモーション動画だけで、ストアアイコンと 2 種のプロモタイルは全言語向けにしか置けない（[Complete your listing information](https://developer.chrome.com/docs/webstore/cws-dashboard-listing): "The small tile and Marquee promo tile cannot be localized."）。
+
+| 欄 | 入れる 3 枚 |
+| -- | ----------- |
+| ローカライズ版（日本語。上部のプルダウンで選ぶ） | `github-1-pr-header.png` → `github-2-pr-comment.png` → `options-prompt-ja.png` |
+| ローカライズ版（English） | `github-1-pr-header.png` → `github-2-pr-comment.png` → `options-prompt-en.png` |
+| 全言語向け | `github-1-pr-header.png` → `github-2-pr-comment.png` → `options-prompt-en.png` |
+
+全言語向けを英語にするのは、デフォルトロケールが日本語でも、日英以外の言語で見る人には英語のほうが読めるため。表示は「ローカライズ版 → 全言語向け」の順に並ぶので（同ページの表示順）、各欄を 3 枚に抑えて、同じ絵が続いて見えるのを短くしておく。
 
 ## Store listing タブ
 
