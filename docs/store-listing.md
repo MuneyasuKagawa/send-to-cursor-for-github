@@ -12,12 +12,21 @@
 | ストアアイコン     | `store-assets/store-icon-128.png`                     | 必須（128x128）          |
 | 小プロモタイル     | `store-assets/promo-small-440x280.png`                | 必須（440x280）          |
 | マーキータイル     | `store-assets/promo-marquee-1400x560.png`             | 任意（1400x560）         |
-| スクリーンショット | `store-assets/screenshots/`（`tools/shoot_options.py`） | 1 枚以上・最大 5 枚      |
+| スクリーンショット | `store-assets/screenshots/`（設定ページは `tools/shoot_options.py`） | 1 枚以上・最大 5 枚      |
 | プライバシーポリシー | `docs/privacy-policy.md`                              | 必須（後述のとおり該当） |
 
 スクリーンショットは 1280x800 か 640x400 のみ。余白やダミーの枠を足さず、そのままの大きさで出す。
 
-同梱してあるのは設定ページの 4 枚（日英 2 枚ずつ）だけで、**GitHub 上のボタンを写した画像は入っていない**。ボタンは GitHub にログインした状態でしか出ない位置に入るため、拡張を読み込んだ自分のブラウザで撮る必要がある。撮り方は下の「GitHub 上のスクリーンショットの撮り方」を参照。
+`store-assets/screenshots/` には次の 6 枚がある。掲載するのは 1 ロケールあたり 3 枚で、先頭がいちばん見られるので GitHub 上のボタンを前に置く。
+
+| ファイル | 中身 | 掲載 |
+| -------- | ---- | ---- |
+| `github-1-pr-header.png` | PR ヘッダーに出るボタン | 1 枚目（言語共通） |
+| `github-2-pr-comment.png` | レビューコメントに出るボタン | 2 枚目（言語共通） |
+| `options-prompt-ja.png` / `options-prompt-en.png` | プロンプトを編集する画面 | 3 枚目（ロケールごと） |
+| `options-general-ja.png` / `options-general-en.png` | 一般設定の画面 | 予備（差し替え用） |
+
+GitHub の 2 枚はボタンのラベルが `Cursor` で日英とも同じなので、ロケールごとに分ける必要がない。設定ページの画像だけロケールごとに入れ替える。
 
 ## Store listing タブ
 
@@ -59,7 +68,7 @@ GitHub の PR と Issue に、その内容を渡すプロンプト付きで Curs
 ・cursor:// の起動が Chrome にブロックされる場合は、設定ページで https://cursor.com/link/ 経由に切り替えられます
 
 ■ プライバシー
-・PR や Issue の内容を読むのは、押したボタンのプロンプトを組み立てるときだけです
+・PR や Issue の内容を読むのは、ボタンに持たせるプロンプトを組み立てるためだけです
 ・読み取った内容を保存したり、開発者に送ったりすることはありません（開発者のサーバーはありません）
 ・保存するのは設定だけです
 ・ソースコードはすべて公開しています: https://github.com/MuneyasuKagawa/send-to-cursor-for-github
@@ -95,7 +104,7 @@ No copying and pasting: hand the pull request, the review comment, or the failin
 ・If Chrome blocks the cursor:// launch, the options page can switch to going through https://cursor.com/link/
 
 ■ Privacy
-・The extension reads pull request and issue content only to build the prompt for the button you pressed
+・The extension reads pull request and issue content only to build the prompt its button will carry
 ・It never stores that content and never sends it to the developer (there is no developer server)
 ・The only thing it stores is your settings
 ・The source is public: https://github.com/MuneyasuKagawa/send-to-cursor-for-github
@@ -156,21 +165,28 @@ Limited Use の開示はホームページか、そこから 1 クリックで�
 
 ## Test instructions タブ
 
-ログインは不要だが、ボタンの出る場所は伝えた方が早い。次の内容を入れる。
+ログインは不要だが、ログアウトのままだとヘッダーにはボタンが出ない（GitHub がヘッダーのアクション列を隠すため。ログアウトの Chrome で確認済み）。出る場所を先に伝えておく。
 
 ```
 No account is needed for this extension itself.
 
-1. Open any GitHub pull request, for example https://github.com/octocat/Hello-World/pull/10908
-2. A "Cursor" button appears in the pull request header and at the end of the reaction row under the description.
-   Note: GitHub hides the header action row for signed-out visitors, so please sign in to GitHub to see the button.
-3. Shift-click the button to copy the generated prompt to the clipboard instead of launching the app.
-   This lets you review exactly what the extension would send without installing Cursor.
-4. Plain click opens cursor://anysphere.cursor-deeplink/prompt?text=... , which requires the Cursor app.
-   The options page can switch this to https://cursor.com/link/prompt?text=... instead.
+1. Open any GitHub pull request, for example
+   https://github.com/facebook/react/pull/37143
+2. A "Cursor" button is added at the end of the reaction row under the description,
+   and next to the actions of each comment.
+   While signed out of GitHub the pull request header has no visible action row, so the
+   header button is skipped; signing in to GitHub adds one more button up in the header.
+3. Shift-click the button to copy the generated prompt to the clipboard instead of
+   launching the app. This shows exactly what the extension would send, without
+   installing Cursor.
+4. A plain click opens cursor://anysphere.cursor-deeplink/prompt?text=... , which needs
+   the Cursor app. The options page can switch this to
+   https://cursor.com/link/prompt?text=... instead.
 ```
 
 ## GitHub 上のスクリーンショットの撮り方
+
+ヘッダーに出るボタンは GitHub にログインしているときだけなので、ここは手で撮る（コマンドラインの `--load-extension` は Chrome 137 以降のブランド版では無視されるため、ヘッドレスでまとめて撮ることもできない。自動化するなら `--remote-debugging-port` と `--enable-unsafe-extension-debugging` を付けて起動し、CDP の `Extensions.loadUnpacked` で読み込む）。
 
 1. `chrome://extensions` でデベロッパーモードをオンにし、このディレクトリを「パッケージ化されていない拡張機能を読み込む」で読み込む
 2. GitHub にログインし、見せたい PR を開く（自分のリポジトリの PR が無難。他人の PR を載せると、その内容ごと掲載することになる）
@@ -187,6 +203,6 @@ No account is needed for this extension itself.
 - [ ] Shift + クリックでプロンプトがコピーされ、内容に余計な情報が入っていない
 - [ ] 設定ページの各タブが日本語と英語の両方で崩れていない
 - [ ] `manifest.json` の `version` を上げた（更新のとき。同じ版は再提出できない）
-- [ ] スクリーンショットが 1280x800 で、GitHub 上のボタンの画像が入っている
+- [ ] スクリーンショットが 1280x800 で、UI を変えたあとに撮り直してある
 - [ ] プライバシーポリシーの URL が公開されていて開ける
 - [ ] デベロッパーアカウントの[登録料](https://developer.chrome.com/docs/webstore/register)（一度だけ 5 USD）を払ってある

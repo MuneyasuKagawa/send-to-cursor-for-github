@@ -51,7 +51,7 @@ python3 tools/shoot_options.py # 設定ページのスクリーンショット�
 
 `tools/shoot_options.py` は、設定ページの `<head>` に `chrome.storage.sync` の代わりを差し込んだ一時ページを作り、ヘッドレスの Chrome に 1280x800 で開かせます（ストアのスクリーンショットは 1280x800 か 640x400 のみ）。`--screenshot` は書き出したあとも終了しないことがあるので、ファイルの大きさが落ち着いたら自分で止めています。
 
-GitHub 上のボタンを写した画像だけは手で撮る必要があります。ボタンは GitHub がログイン中だけ表示する領域に入るためです。撮り方は [docs/store-listing.md](docs/store-listing.md) に書いてあります。
+GitHub 上のボタンを写した画像だけは手で撮ります。ヘッダーのボタンは GitHub にログインしているときだけ出る（ログアウト時は GitHub がヘッダーのアクション列を隠すため、そこだけ飛ばされる）ので、ログインしたブラウザが必要です。撮り方は [docs/store-listing.md](docs/store-listing.md) に書いてあります。
 
 ## 設定
 

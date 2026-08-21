@@ -76,10 +76,23 @@ def page_references(page: pathlib.Path) -> set[str]:
     return refs
 
 
-def missing_messages(manifest_text: str) -> list[str]:
-    """manifest の __MSG_x__ が _locales の全言語にあるか。既定言語だけだと審査で落ちる。"""
+def missing_messages(manifest: dict, manifest_text: str, packed: set[str]) -> list[str]:
+    """manifest の __MSG_x__ が _locales の全言語にあるか。既定言語だけだと審査で落ちる。
+
+    既定言語のファイル自体の有無も見る。glob で回すだけだと、default_locale の
+    messages.json が消えていても「残っている言語は揃っている」で通ってしまう。
+    """
     keys = set(MSG_RE.findall(manifest_text))
     problems = []
+
+    default_locale = manifest.get("default_locale")
+    if keys and not default_locale:
+        problems.append("__MSG_*__ を使っているのに manifest に default_locale がない")
+    if default_locale:
+        default_messages = f"_locales/{default_locale}/messages.json"
+        if default_messages not in packed:
+            problems.append(f"{default_messages} が入っていない（default_locale）")
+
     for messages_path in sorted(ROOT.glob("_locales/*/messages.json")):
         messages = json.loads(messages_path.read_text(encoding="utf-8"))
         for key in sorted(keys - messages.keys()):
@@ -104,7 +117,7 @@ def main() -> None:
             f"{ref} が入っていない（{options_page} から参照）"
             for ref in sorted(page_references(ROOT / options_page) - packed)
         ]
-    problems += missing_messages(manifest_text)
+    problems += missing_messages(manifest, manifest_text, packed)
 
     if problems:
         for problem in problems:

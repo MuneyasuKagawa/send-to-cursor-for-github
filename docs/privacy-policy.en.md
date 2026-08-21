@@ -22,7 +22,7 @@ The extension does not collect browsing history, cookies, credentials, or person
 
 ## What the extension reads from the page
 
-The extension only runs on `https://github.com/*`. When you press the button, it reads the following from the pull request or issue you have open in order to build the prompt.
+The extension only runs on `https://github.com/*`. To build the prompt the button will carry, it reads the following from the pull request or issue you have open. The reading happens when the extension inserts its buttons as the page loads, not at the moment you press one (building the prompt on press would add a delay between the click and Cursor opening).
 
 - Repository name, and the number, title, and URL of the pull request or issue
 - Head and base branch names, and issue labels
@@ -46,7 +46,7 @@ Shift-clicking the button to copy the prompt to the clipboard sends nothing eith
 
 ## Third parties
 
-The extension does not sell, rent, or otherwise share the data it handles with third parties.
+The extension does not sell or rent the data it handles. The only case where it reaches a third party is the one described above: if you choose `https://cursor.com/link/` as the way to open the link, that prompt is sent to cursor.com (Anysphere Inc.). There is no other sharing.
 
 ## Limited Use
 
@@ -54,7 +54,9 @@ The extension complies with the Chrome Web Store User Data Policy, including the
 
 ## Deleting your settings
 
-Stored settings are removed when you remove the extension from Chrome. With sync enabled, the settings on your other devices are removed as sync catches up. To clear them individually, use "Reset all prompts to defaults" on the options page, or remove the extension from `chrome://extensions`.
+To erase every stored setting, remove the extension from `chrome://extensions`. With sync enabled, the settings on your other devices are removed as sync catches up.
+
+"Reset all prompts to defaults" on the options page restores the prompts of the language currently shown. The prompts of the other language, along with the display language, how to open the link, the button label, and which targets are enabled, are left as they were, so it is not a way to erase what is stored.
 
 ## Changes
 

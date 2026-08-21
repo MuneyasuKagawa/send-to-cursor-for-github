@@ -35,12 +35,12 @@ CHROME = os.environ.get(
 
 WIDTH, HEIGHT = 1280, 800
 
-# (出力名, 表示言語, 開くタブ)
+# (出力名, 表示言語, 開くタブ)。GitHub 上のボタンを写した github-*.png は手で撮る。
 SHOTS = [
-    ("ja-1-general.png", "ja", "general"),
-    ("ja-2-prompt.png", "ja", "prReview"),
-    ("en-1-general.png", "en", "general"),
-    ("en-2-prompt.png", "en", "prReview"),
+    ("options-general-ja.png", "ja", "general"),
+    ("options-prompt-ja.png", "ja", "prReview"),
+    ("options-general-en.png", "en", "general"),
+    ("options-prompt-en.png", "en", "prReview"),
 ]
 
 STUB = """

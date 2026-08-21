@@ -51,7 +51,7 @@ python3 tools/shoot_options.py # retake the options page screenshots at 1280x800
 
 `tools/shoot_options.py` builds a temporary page with a stand-in for `chrome.storage.sync` injected into the options page's `<head>`, then has headless Chrome open it at 1280x800 (store screenshots may only be 1280x800 or 640x400). `--screenshot` sometimes does not exit after writing the file, so the script stops Chrome itself once the file size settles.
 
-The screenshots showing the button on GitHub have to be taken by hand, because the button goes into an area GitHub only shows while you are signed in. The steps are in [docs/store-listing.md](docs/store-listing.md).
+The screenshots showing the button on GitHub are taken by hand. The header button only appears while you are signed in to GitHub (signed out, GitHub keeps the header action row hidden and that one placement is skipped), so a signed-in browser is needed. The steps are in [docs/store-listing.md](docs/store-listing.md).
 
 ## Settings
 
