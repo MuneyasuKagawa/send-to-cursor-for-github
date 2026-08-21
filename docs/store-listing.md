@@ -17,28 +17,31 @@
 
 スクリーンショットは 1280x800 か 640x400 のみ。余白やダミーの枠を足さず、そのままの大きさで出す。
 
-`store-assets/screenshots/` には次の 6 枚がある。
+`store-assets/screenshots/` には次の画像がある。
 
 | ファイル | 中身 |
 | -------- | ---- |
 | `github-1-pr-header.png` | PR ヘッダーに出るボタン |
 | `github-2-pr-comment.png` | レビューコメントに出るボタン |
+| `cursor-new-chat-ja.png` / `cursor-new-chat-en.png` | ボタンを押して Cursor に渡ったプロンプト |
 | `options-prompt-ja.png` / `options-prompt-en.png` | プロンプトを編集する画面 |
 | `options-general-ja.png` / `options-general-en.png` | 一般設定の画面（差し替え用の予備） |
 
-GitHub の 2 枚はボタンのラベルが `Cursor` で日英とも同じなので、ロケールごとに分ける必要がない。設定ページの画像だけロケールごとに入れ替える。先頭がいちばん見られるので、GitHub 上のボタンを前に置く。
+GitHub の 2 枚はボタンのラベルが `Cursor` で日英とも同じなので、ロケールごとに分ける必要がない。Cursor のダイアログと設定ページの画像はロケールごとに入れ替える。先頭がいちばん見られるので、GitHub 上のボタンを前に置く。
 
 ### ローカライズ版アセットと全言語向けアセット
 
 掲載欄は「ローカライズ版アセット」と「全言語向けアセット」に分かれている。スクリーンショットはどちらの欄も 1 枚以上・最大 5 枚が必須（ダッシュボードの両方に `*` が付く）。ローカライズできるのは詳細な説明・スクリーンショット・プロモーション動画だけで、ストアアイコンと 2 種のプロモタイルは全言語向けにしか置けない（[Complete your listing information](https://developer.chrome.com/docs/webstore/cws-dashboard-listing): "The small tile and Marquee promo tile cannot be localized."）。
 
-| 欄 | 入れる 3 枚 |
+| 欄 | 入れる 4 枚 |
 | -- | ----------- |
-| ローカライズ版（日本語。上部のプルダウンで選ぶ） | `github-1-pr-header.png` → `github-2-pr-comment.png` → `options-prompt-ja.png` |
-| ローカライズ版（English） | `github-1-pr-header.png` → `github-2-pr-comment.png` → `options-prompt-en.png` |
-| 全言語向け | `github-1-pr-header.png` → `github-2-pr-comment.png` → `options-prompt-en.png` |
+| ローカライズ版（日本語。上部のプルダウンで選ぶ） | `github-1-pr-header.png` → `github-2-pr-comment.png` → `cursor-new-chat-ja.png` → `options-prompt-ja.png` |
+| ローカライズ版（English） | `github-1-pr-header.png` → `github-2-pr-comment.png` → `cursor-new-chat-en.png` → `options-prompt-en.png` |
+| 全言語向け | 上の English と同じ 4 枚 |
 
-全言語向けを英語にするのは、デフォルトロケールが日本語でも、日英以外の言語で見る人には英語のほうが読めるため。表示は「ローカライズ版 → 全言語向け」の順に並ぶので（同ページの表示順）、各欄を 3 枚に抑えて、同じ絵が続いて見えるのを短くしておく。
+全言語向けを英語にするのは、デフォルトロケールが日本語でも、日英以外の言語で見る人には英語のほうが読めるため。表示は「ローカライズ版 → 全言語向け」の順に並ぶので（同ページの表示順）、各欄を 4 枚に抑えて、同じ絵が続いて見えるのを短くしておく。
+
+`cursor-new-chat-*.png` は Cursor 側のダイアログなので手で撮る。ウィンドウを撮って（Cmd+Shift+4 → Space → Option を押しながらウィンドウをクリックすると影が付かない）、`magick <元画像> -crop 1280x800+320+123 +repage -strip <出力>` で中央から等倍で切り出す。縮小せず切り出すのは、全体を 1280 幅に縮めるとプロンプトの文字が読めなくなるため。オフセットは元画像が 1919x1047 のときの値なので、寸法が違うときは `(幅-1280)/2` と `(高さ-800)/2` で計算し直す。
 
 ## Store listing タブ
 
