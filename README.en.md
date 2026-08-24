@@ -6,6 +6,8 @@ A Chrome extension that sends content from GitHub pull requests and issues to a 
 
 Clicking the button added to GitHub opens Cursor with a prompt containing the repository, branches, body, and other relevant context. By default, it opens `cursor://` directly and does not use a custom relay server.
 
+[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/send-to-cursor-for-github/pjagjodoppglflmcpmdhcaifkjnegdpf)
+
 ## Features
 
 - Review an entire pull request
@@ -21,11 +23,7 @@ The extension supports the **Conversation**, **Files changed**, and **Checks** t
 
 ## Installation
 
-1. Download or clone this repository
-2. Open `chrome://extensions` in Chrome
-3. Enable "Developer mode"
-4. Select "Load unpacked"
-5. Choose this repository's directory
+Click "Add to Chrome" on the [Chrome Web Store](https://chromewebstore.google.com/detail/send-to-cursor-for-github/pjagjodoppglflmcpmdhcaifkjnegdpf).
 
 The options page opens after the first installation. To open it later, click the extension icon in the toolbar.
 
@@ -52,6 +50,14 @@ Available placeholders are shown next to each template editor. A line containing
 
 ## Development
 
+### Load the development version manually
+
+1. Download or clone this repository
+2. Open `chrome://extensions` in Chrome
+3. Enable "Developer mode"
+4. Select "Load unpacked"
+5. Choose this repository's directory
+
 ### Test locally
 
 ```bash
@@ -66,14 +72,6 @@ After starting the server, use these URLs to check fixtures modeled on GitHub's 
 - `http://127.0.0.1:8765/octocat/hello-world/issues/7?ui=new`
 
 Load the extension in Chrome to check the options page.
-
-### Package for the Chrome Web Store
-
-```bash
-python3 tools/package.py
-```
-
-The submission ZIP is created in `dist/`. See [docs/store-listing.md](docs/store-listing.md) for publishing instructions and listing text, and [docs/privacy-policy.en.md](docs/privacy-policy.en.md) for the privacy policy.
 
 ## Known limitations
 

@@ -6,6 +6,8 @@ GitHub の Pull Request（PR）や Issue の内容を、Cursor の新しいチ�
 
 GitHub 上に追加されるボタンを押すと、リポジトリ、ブランチ、本文などを含むプロンプトが Cursor で開きます。既定では `cursor://` を直接使用し、独自の中継サーバーは使用しません。
 
+[Chrome Web Store からインストール](https://chromewebstore.google.com/detail/send-to-cursor-for-github/pjagjodoppglflmcpmdhcaifkjnegdpf)
+
 ## 主な機能
 
 - PR 全体をレビュー
@@ -21,11 +23,7 @@ PR の **Conversation**、**Files changed**、**Checks** タブと、Issue ペ�
 
 ## インストール
 
-1. このリポジトリをダウンロードまたはクローンする
-2. Chrome で `chrome://extensions` を開く
-3. 「デベロッパーモード」を有効にする
-4. 「パッケージ化されていない拡張機能を読み込む」を選ぶ
-5. このリポジトリのディレクトリを指定する
+[Chrome Web Store](https://chromewebstore.google.com/detail/send-to-cursor-for-github/pjagjodoppglflmcpmdhcaifkjnegdpf) で「Chrome に追加」をクリックします。
 
 初回インストール時に設定ページが開きます。あとから開く場合は、ツールバーの拡張機能アイコンをクリックしてください。
 
@@ -52,6 +50,14 @@ Chrome が `cursor://` の起動をブロックする場合は、設定の「リ
 
 ## 開発
 
+### 開発版を手動で読み込む
+
+1. このリポジトリをダウンロードまたはクローンする
+2. Chrome で `chrome://extensions` を開く
+3. 「デベロッパーモード」を有効にする
+4. 「パッケージ化されていない拡張機能を読み込む」を選ぶ
+5. このリポジトリのディレクトリを指定する
+
 ### ローカルで動作確認
 
 ```bash
@@ -66,14 +72,6 @@ python3 tools/serve_test.py 8765
 - `http://127.0.0.1:8765/octocat/hello-world/issues/7?ui=new`
 
 設定ページは Chrome 拡張として読み込んで確認してください。
-
-### Chrome Web Store 用パッケージ
-
-```bash
-python3 tools/package.py
-```
-
-提出用 ZIP は `dist/` に作成されます。公開手順と掲載文は [docs/store-listing.md](docs/store-listing.md)、プライバシーポリシーは [docs/privacy-policy.md](docs/privacy-policy.md) にあります。
 
 ## 既知の制約
 
