@@ -1,0 +1,56 @@
+name: リリース
+
+# main の manifest.json で version が上がっていたら、ZIP を作ってストアの審査に出す。
+# 必要なシークレット: CWS_CLIENT_ID / CWS_CLIENT_SECRET / CWS_REFRESH_TOKEN /
+# CWS_PUBLISHER_ID / CWS_ITEM_ID（取り方は docs/store-listing.md）
+on:
+  push:
+    branches: [main]
+
+# タグを打つため
+permissions:
+  contents: write
+
+# 同じアイテムに同時に提出しない
+concurrency:
+  group: chrome-web-store
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # 1 つ前のコミットとタグを見るため、履歴ごと取る
+          fetch-depth: 0
+
+      - name: バージョンが上がったか見る
+        id: gate
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: python3 tools/version_gate.py
+
+      - name: ZIP を作る
+        if: steps.gate.outputs.release == 'true'
+        run: python3 tools/package.py
+
+      - name: ストアに上げて審査に出す
+        if: steps.gate.outputs.release == 'true'
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CWS_ITEM_ID: ${{ secrets.CWS_ITEM_ID }}
+          VERSION: ${{ steps.gate.outputs.version }}
+        run: python3 tools/publish.py "dist/send-to-cursor-for-github-$VERSION.zip"
+
+      # 提出できた版にだけ打つ。次のプッシュでこの版を出し直さないための印でもある。
+      - name: タグを打つ
+        if: steps.gate.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.gate.outputs.version }}
+        run: |
+          git tag "v$VERSION"
+          git push origin "v$VERSION"

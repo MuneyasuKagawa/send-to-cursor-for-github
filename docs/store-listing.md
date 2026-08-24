@@ -211,6 +211,35 @@ No account is needed for this extension itself.
 
 掲載順は先頭がいちばん見られるので、GitHub 上のボタンを 1 枚目、設定ページを後ろに置く。
 
+## 2 回目以降のリリース
+
+`manifest.json` の `version` を上げて `main` にプッシュすると、[リリースの workflow](../.github/workflows/release.yml) が ZIP を作ってストアの審査に出し、`v<version>` のタグを打つ。バージョンが据え置きのプッシュでは何もしない。ローカルから出すこともできる。
+
+```
+python3 tools/package.py
+CWS_...=... python3 tools/publish.py dist/send-to-cursor-for-github-1.0.1.zip
+```
+
+自動化できるのはここまでで、次の 4 つは手作業のまま残る（[Use the Chrome Web Store API](https://developer.chrome.com/docs/webstore/using-api)）。
+
+- 掲載情報とプライバシーの入力。API v2 のメソッドは `media.upload` / `publish` / `fetchStatus` / `cancelSubmission` / `setPublishedDeployPercentage` だけで、説明文・スクリーンショット・プロモタイルを触るものは無い（"Before you can publish a new item, you have to fill out the Store listing and Privacy tabs in the Developer Dashboard." = 「新しいアイテムを公開する前に、ダッシュボードのストアの掲載情報タブとプライバシータブを埋めておく必要があります」）
+- ストアにアイテムを作る最初の 1 回。v2 に新規作成のメソッドは無い
+- 審査。`publish` は提出までで、公開は審査を通ったあと
+- ダッシュボードで公開範囲を手で変えたとき。その設定で一度手動公開するまで API から公開できない
+
+### 必要なシークレット
+
+リポジトリの Settings > Secrets and variables > Actions に 5 つ入れる。
+
+| 名前 | 取り方 |
+| ---- | ------ |
+| `CWS_CLIENT_ID` / `CWS_CLIENT_SECRET` | Google Cloud で Chrome Web Store API を有効にし、OAuth クライアント（ウェブアプリケーション）を作る |
+| `CWS_REFRESH_TOKEN` | 上のクライアントで、スコープ `https://www.googleapis.com/auth/chromewebstore` を OAuth 2.0 Playground から認可して受け取る |
+| `CWS_PUBLISHER_ID` | ダッシュボードの Publisher > Settings |
+| `CWS_ITEM_ID` | ストアのアイテム ID（拡張の ID） |
+
+アカウントの 2 段階認証は必須（"Developers are required to enable 2-step verification for their Google Account to publish or update an existing extension." = 「既存の拡張機能を公開・更新するには、Google アカウントで 2 段階認証を有効にする必要があります」）。
+
 ## 提出前に確かめること
 
 - [ ] `python3 tools/package.py` が通り、`dist/` の ZIP ができている
