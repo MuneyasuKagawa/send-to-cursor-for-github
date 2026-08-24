@@ -88,13 +88,46 @@ var SendToCursor = globalThis.SendToCursor || (globalThis.SendToCursor = {});
     return `${base}?text=${encodeURIComponent(prompt)}`;
   };
 
-  function truncationNote() {
-    return `\n\n${ns.t("prompt.truncationNote")}`;
+  function textWithOmission(characters, keepCount, note) {
+    const headCount = Math.ceil((keepCount * 2) / 3);
+    const tailCount = keepCount - headCount;
+    const head = characters.slice(0, headCount).join("");
+    const tail =
+      tailCount > 0 ? characters.slice(characters.length - tailCount).join("") : "";
+    return [head, note, tail].filter(Boolean).join("\n\n");
   }
 
   /**
-   * 8,000 文字制限に収まるまで本文だけを縮める。
-   * 本文以外（ブランチ名や依頼内容）は必ず残るようにするため、二分探索で本文長を決める。
+   * URL エンコード後の上限に収まる最大の文字数を二分探索する。
+   * Array.from でコードポイント単位に分け、絵文字のサロゲートペアを途中で切らない。
+   */
+  function fitWithOmission(characters, note, render, linkMode, urlLimit) {
+    const candidate = (keepCount) => {
+      const prompt = render(textWithOmission(characters, keepCount, note));
+      return {
+        url: ns.buildDeeplink(prompt, linkMode),
+        prompt,
+      };
+    };
+
+    let low = 0;
+    let high = characters.length;
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2);
+      if (candidate(mid).url.length <= urlLimit) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return candidate(low);
+  }
+
+  /**
+   * 8,000 文字制限に収まるまで本文の中間を縮める。
+   * 通常は本文以外（ブランチ名や依頼内容）を残し、本文の先頭と末尾を保持する。
+   * 固定部分だけで上限を超えるユーザー編集テンプレートでは、最終手段として
+   * プロンプト全体の先頭と末尾を残して上限内に収める。
    *
    * bodyKey は本文を差し込むプレースホルダー名。対象によって {{commentBody}} /
    * {{issueBody}} / {{failureOutput}} などに変わる。
@@ -107,31 +140,39 @@ var SendToCursor = globalThis.SendToCursor || (globalThis.SendToCursor = {});
     linkMode,
     urlLimit = ns.URL_LIMIT || 8000,
   }) {
+    const normalizedBody = body == null ? "" : String(body);
     const render = (bodyText) =>
       ns.renderTemplate(template, { ...values, [bodyKey]: bodyText });
-    const build = (bodyText) => ns.buildDeeplink(render(bodyText), linkMode);
-
-    const full = build(body);
-    if (full.length <= urlLimit) {
-      return { url: full, prompt: render(body), truncated: false };
-    }
-
-    const note = truncationNote();
-    let low = 0;
-    let high = body.length;
-    while (low < high) {
-      const mid = Math.ceil((low + high) / 2);
-      if (build(body.slice(0, mid) + note).length <= urlLimit) {
-        low = mid;
-      } else {
-        high = mid - 1;
-      }
-    }
-    const truncatedBody = body.slice(0, low) + note;
-    return {
-      url: build(truncatedBody),
-      prompt: render(truncatedBody),
-      truncated: true,
+    const build = (bodyText) => {
+      const prompt = render(bodyText);
+      return { url: ns.buildDeeplink(prompt, linkMode), prompt };
     };
+
+    const full = build(normalizedBody);
+    if (full.url.length <= urlLimit) {
+      return { ...full, truncated: false };
+    }
+
+    const bodyCharacters = Array.from(normalizedBody);
+    const shortened = fitWithOmission(
+      bodyCharacters,
+      ns.t("prompt.truncationNote"),
+      render,
+      linkMode,
+      urlLimit,
+    );
+    if (shortened.url.length <= urlLimit) {
+      return { ...shortened, truncated: true };
+    }
+
+    // 固定部分だけで上限を超える場合も、無効な長さの deeplink は返さない。
+    const fallback = fitWithOmission(
+      Array.from(full.prompt),
+      ns.t("prompt.fallbackTruncationNote"),
+      (prompt) => prompt,
+      linkMode,
+      urlLimit,
+    );
+    return { ...fallback, truncated: true };
   };
 })(SendToCursor);

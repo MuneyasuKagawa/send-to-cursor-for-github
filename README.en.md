@@ -80,7 +80,7 @@ Load the extension in Chrome to check the options page.
 - The extension depends on GitHub's DOM, so future GitHub interface changes may affect button placement or data extraction.
 - When raw Markdown is unavailable in the new issue interface, rendered text is used instead.
 - Full CI logs are not included in prompts.
-- Long bodies are truncated when they exceed Cursor's deeplink limit.
+- When a body exceeds Cursor's deeplink limit, its middle is omitted and its beginning and end are kept.
 
 ## License
 
