@@ -7,6 +7,11 @@ dist/
 # tools/shoot_options.py が撮影中だけ置く一時ページ（途中で落ちたときの取り残し用）
 _shot.html
 
+# サービスアカウントの JSON キー。リポジトリの外に置くのが前提だが、
+# 手元に落としたまま置いてしまったときの保険として無視する。
+*service-account*.json
+cws-key*.json
+
 # 実際の PR ページを保存した HTML はコミットしない。
 # コードやレビュー内容、CSRF トークン、アバター URL などがそのまま含まれる。
 sample_*.html
