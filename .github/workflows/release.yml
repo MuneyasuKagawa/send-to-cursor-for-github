@@ -6,6 +6,8 @@ name: リリース
 on:
   push:
     branches: [main]
+  # 認証と今のストアの状態を、何も変えずに確かめるための手動実行
+  workflow_dispatch:
 
 # タグを打つため
 permissions:
@@ -17,7 +19,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  status:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ストアの状態を見る
+        env:
+          CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CWS_ITEM_ID: ${{ secrets.CWS_ITEM_ID }}
+        run: python3 tools/publish.py --status
+
   release:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

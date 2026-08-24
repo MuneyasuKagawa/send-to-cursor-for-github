@@ -16,6 +16,7 @@ publish は審査への提出までで、公開されるのは審査を通った
 
     python3 tools/publish.py dist/send-to-cursor-for-github-1.0.1.zip
     python3 tools/publish.py --upload-only dist/send-to-cursor-for-github-1.0.1.zip
+    python3 tools/publish.py --status   # 認証と今の状態を見るだけ（何も変えない）
 """
 
 from __future__ import annotations
@@ -85,7 +86,10 @@ def service_account_key() -> dict:
             raise SystemExit(
                 "error: CWS_SERVICE_ACCOUNT_KEY も CWS_SERVICE_ACCOUNT_FILE もない"
             )
-        raw = pathlib.Path(path).read_text(encoding="utf-8")
+        try:
+            raw = pathlib.Path(path).read_text(encoding="utf-8")
+        except OSError as error:
+            raise SystemExit(f"error: {path} が読めない: {error.strerror}")
     try:
         key = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -191,8 +195,20 @@ def publish(token: str, name: str) -> str:
 
 def main() -> None:
     args = sys.argv[1:]
+    status_only = "--status" in args
     upload_only = "--upload-only" in args
     paths = [arg for arg in args if not arg.startswith("--")]
+
+    name = f"publishers/{env('CWS_PUBLISHER_ID')}/items/{env('CWS_ITEM_ID')}"
+
+    if status_only:
+        status = call(
+            f"{API}/v2/{name}:fetchStatus",
+            headers={"Authorization": f"Bearer {access_token()}"},
+        )
+        print(json.dumps(status, ensure_ascii=False, indent=2))
+        return
+
     if len(paths) != 1:
         raise SystemExit(__doc__)
 
@@ -200,7 +216,6 @@ def main() -> None:
     if not archive.is_file():
         raise SystemExit(f"error: {archive} がない")
 
-    name = f"publishers/{env('CWS_PUBLISHER_ID')}/items/{env('CWS_ITEM_ID')}"
     token = access_token()
 
     print(f"{archive} を上げる")
