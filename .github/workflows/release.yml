@@ -1,8 +1,8 @@
 name: リリース
 
 # main の manifest.json で version が上がっていたら、ZIP を作ってストアの審査に出す。
-# 必要なシークレット: CWS_CLIENT_ID / CWS_CLIENT_SECRET / CWS_REFRESH_TOKEN /
-# CWS_PUBLISHER_ID / CWS_ITEM_ID（取り方は docs/store-listing.md）
+# 必要なシークレット: CWS_SERVICE_ACCOUNT_KEY / CWS_PUBLISHER_ID / CWS_ITEM_ID
+# （取り方は docs/store-listing.md）
 on:
   push:
     branches: [main]
@@ -38,9 +38,7 @@ jobs:
       - name: ストアに上げて審査に出す
         if: steps.gate.outputs.release == 'true'
         env:
-          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
-          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
-          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
           CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
           CWS_ITEM_ID: ${{ secrets.CWS_ITEM_ID }}
           VERSION: ${{ steps.gate.outputs.version }}

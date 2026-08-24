@@ -217,7 +217,9 @@ No account is needed for this extension itself.
 
 ```
 python3 tools/package.py
-CWS_...=... python3 tools/publish.py dist/send-to-cursor-for-github-1.0.1.zip
+CWS_SERVICE_ACCOUNT_FILE=~/.config/cws-key.json \
+CWS_PUBLISHER_ID=... CWS_ITEM_ID=... \
+python3 tools/publish.py --upload-only dist/send-to-cursor-for-github-1.0.1.zip
 ```
 
 自動化できるのはここまでで、次の 4 つは手作業のまま残る（[Use the Chrome Web Store API](https://developer.chrome.com/docs/webstore/using-api)）。
@@ -229,16 +231,26 @@ CWS_...=... python3 tools/publish.py dist/send-to-cursor-for-github-1.0.1.zip
 
 ### 必要なシークレット
 
-リポジトリの Settings > Secrets and variables > Actions に 5 つ入れる。
+認証はサービスアカウントで行う。利用者の同意で得るリフレッシュトークンは、同意画面がテスト中だと 7 日で切れ（[Using OAuth 2.0 to Access Google APIs](https://developers.google.com/identity/protocols/oauth2)）、使われないまま 6 か月経つと無効になるため、CI には向かない。サービスアカウントはこの期限が無く、ドキュメントでも CI/CD 向けとされている（[Use a service account with the Chrome Web Store API](https://developer.chrome.com/docs/webstore/service-accounts): "making them ideal for automating your extension publishing workflows, such as in CI/CD pipelines" = 「CI/CD パイプラインのように拡張機能の公開作業を自動化する用途に最適」）。
 
-| 名前 | 取り方 |
-| ---- | ------ |
-| `CWS_CLIENT_ID` / `CWS_CLIENT_SECRET` | Google Cloud で Chrome Web Store API を有効にし、OAuth クライアント（ウェブアプリケーション）を作る |
-| `CWS_REFRESH_TOKEN` | 上のクライアントで、スコープ `https://www.googleapis.com/auth/chromewebstore` を OAuth 2.0 Playground から認可して受け取る |
+準備は次の 4 つ。
+
+1. Google Cloud で Chrome Web Store API を有効にする
+2. サービスアカウントを作る（ロールの付与は不要）
+3. そのメールアドレスをダッシュボードの Account セクションに追加する。これでパブリッシャーのアイテムを触れるようになる
+4. サービスアカウントの JSON キーを作る
+
+リポジトリの Settings > Secrets and variables > Actions に 3 つ入れる。
+
+| 名前 | 中身 |
+| ---- | ---- |
+| `CWS_SERVICE_ACCOUNT_KEY` | 4 で作った JSON キーの中身をそのまま貼る |
 | `CWS_PUBLISHER_ID` | ダッシュボードの Publisher > Settings |
 | `CWS_ITEM_ID` | ストアのアイテム ID（拡張の ID） |
 
-アカウントの 2 段階認証は必須（"Developers are required to enable 2-step verification for their Google Account to publish or update an existing extension." = 「既存の拡張機能を公開・更新するには、Google アカウントで 2 段階認証を有効にする必要があります」）。
+手元から動かすときは、JSON キーをリポジトリの外（`~/.config/` など）に置いて `CWS_SERVICE_ACCOUNT_FILE` にそのパスを渡す。
+
+デベロッパーアカウント側では 2 段階認証が必須（[Use the Chrome Web Store API](https://developer.chrome.com/docs/webstore/using-api): "Developers are required to enable 2-step verification for their Google Account to publish or update an existing extension." = 「既存の拡張機能を公開・更新するには、Google アカウントで 2 段階認証を有効にする必要があります」）。
 
 ## 提出前に確かめること
 
