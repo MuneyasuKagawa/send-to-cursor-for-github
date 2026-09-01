@@ -40,6 +40,7 @@
   padding: 0 8px;
   margin: 0 0 0 8px;
   font-size: 11px;
+  align-self: center;
 }
 
 /* アイコンのみのときは高さと同じ 26px 幅の円にする（12px のアイコン + 左右 6px + 枠線 2px） */
